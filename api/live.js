@@ -38,7 +38,7 @@ async function upstox(base, path, params = {}) {
 
 function pickQuote(data, key) {
   const d = data?.data || {};
-  return d[key] || d[key.replace('|', ':')] || Object.entries(d).find(([k]) => k.replace(':', '|') === key)?.[1] || null;
+  return d[key] || d[key.replace('|', ':')] || Object.entries(d).find(([k, v]) => k.replace(':', '|') === key || v?.instrument_token === key)?.[1] || null;
 }
 
 async function market() {
@@ -56,8 +56,9 @@ async function market() {
 function normalizeStockQuote(q, key, name) {
   if (!q) return { name, instrument_key: key, available: false };
   const last = Number(q.last_price);
-  const prev = q.cp == null ? null : Number(q.cp);
-  const change = prev != null && Number.isFinite(last) ? last - prev : null;
+  const prev = q.cp == null ? (q.ohlc?.close == null ? null : Number(q.ohlc.close)) : Number(q.cp);
+  const directChange = q.net_change == null ? null : Number(q.net_change);
+  const change = directChange != null && Number.isFinite(directChange) ? directChange : (prev != null && Number.isFinite(last) ? last - prev : null);
   const changePct = prev ? (change / prev) * 100 : null;
   return {
     name,
@@ -73,9 +74,9 @@ function normalizeStockQuote(q, key, name) {
 
 async function leaders() {
   const keys = [IDS.RELIANCE, IDS.HDFCBANK, IDS.ICICIBANK].join(',');
-  // Use the same stable LTP endpoint that already works for NIFTY/SENSEX/VIX.
-  // V3 is valid too, but V2 gives a consistent response for these equity keys.
-  const raw = await upstox(UPSTOX_V2, '/market-quote/ltp', { instrument_key: keys });
+  // Full Market Quotes returns last_price, OHLC close, net_change and instrument_token.
+  // It is more robust for equities than relying on the deprecated LTP endpoint response shape.
+  const raw = await upstox(UPSTOX_V2, '/market-quote/quotes', { instrument_key: keys });
   return {
     reliance: normalizeStockQuote(pickQuote(raw, IDS.RELIANCE), IDS.RELIANCE, 'Reliance'),
     hdfcBank: normalizeStockQuote(pickQuote(raw, IDS.HDFCBANK), IDS.HDFCBANK, 'HDFC Bank'),
@@ -102,7 +103,6 @@ async function candles(underlying) {
 async function optionContracts(underlying, expiry = 'current_week') {
   const key = IDS[underlying];
   if (!key) throw new Error('Unknown underlying');
-  // Fetch active contracts first, then select the nearest future expiry.
   const raw = await upstox(UPSTOX_V2, '/option/contract', { instrument_key: key });
   const contracts = Array.isArray(raw?.data) ? raw.data : [];
   const dates = [...new Set(contracts.map(x => x.expiry).filter(Boolean))].sort();
