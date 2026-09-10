@@ -41,15 +41,27 @@ function pickQuote(data, key) {
   return d[key] || d[key.replace('|', ':')] || Object.entries(d).find(([k, v]) => k.replace(':', '|') === key || v?.instrument_token === key)?.[1] || null;
 }
 
+function quoteMeta(q) {
+  const timestamp = q?.timestamp || null;
+  const lastTradeTime = q?.last_trade_time ? new Date(Number(q.last_trade_time)).toISOString() : null;
+  return { timestamp, last_trade_time: lastTradeTime };
+}
+
 async function market() {
   const keys = [IDS.NIFTY, IDS.SENSEX, IDS.VIX].join(',');
-  const data = await upstox(UPSTOX_V2, '/market-quote/ltp', { instrument_key: keys });
+  const data = await upstox(UPSTOX_V3, '/market-quote/quotes', { instrument_key: keys });
+  const nifty = pickQuote(data, IDS.NIFTY);
+  const sensex = pickQuote(data, IDS.SENSEX);
+  const vix = pickQuote(data, IDS.VIX);
+  const timestamps = [nifty?.timestamp, sensex?.timestamp, vix?.timestamp].filter(Boolean).map(x => new Date(x).getTime()).filter(Number.isFinite);
   return {
-    nifty: pickQuote(data, IDS.NIFTY),
-    sensex: pickQuote(data, IDS.SENSEX),
-    vix: pickQuote(data, IDS.VIX),
+    nifty,
+    sensex,
+    vix,
     provider: 'Upstox',
-    updatedAt: new Date().toISOString(),
+    data_timestamp: timestamps.length ? new Date(Math.max(...timestamps)).toISOString() : null,
+    fetched_at: new Date().toISOString(),
+    meta: { nifty: quoteMeta(nifty), sensex: quoteMeta(sensex), vix: quoteMeta(vix) },
   };
 }
 
@@ -57,17 +69,9 @@ function normalizeStockQuote(q, key, name) {
   if (!q) return { name, instrument_key: key, available: false };
   const last = Number(q.last_price);
   const directChange = q.net_change == null ? null : Number(q.net_change);
-  const change = directChange != null && Number.isFinite(directChange)
-    ? directChange
-    : null;
-  // Full Market Quote's net_change is the session change. Derive the
-  // previous close from last - net_change so displayed values are consistent.
-  const prev = change != null && Number.isFinite(last)
-    ? last - change
-    : (q.ohlc?.close == null ? null : Number(q.ohlc.close));
-  const changePct = prev != null && prev !== 0 && change != null
-    ? (change / prev) * 100
-    : null;
+  const change = directChange != null && Number.isFinite(directChange) ? directChange : null;
+  const prev = q.prev_close_price == null ? (q.ohlc?.close == null ? null : Number(q.ohlc.close)) : Number(q.prev_close_price);
+  const changePct = prev != null && prev !== 0 && change != null ? (change / prev) * 100 : null;
   return {
     name,
     instrument_key: key,
@@ -76,18 +80,20 @@ function normalizeStockQuote(q, key, name) {
     change: change != null && Number.isFinite(change) ? change : null,
     change_pct: changePct != null && Number.isFinite(changePct) ? changePct : null,
     volume: q.volume == null ? null : Number(q.volume),
+    data_timestamp: q.timestamp || null,
+    last_trade_time: q.last_trade_time ? new Date(Number(q.last_trade_time)).toISOString() : null,
     available: true,
   };
 }
 
 async function leaders() {
   const keys = [IDS.RELIANCE, IDS.HDFCBANK, IDS.ICICIBANK].join(',');
-  const raw = await upstox(UPSTOX_V2, '/market-quote/quotes', { instrument_key: keys });
+  const raw = await upstox(UPSTOX_V3, '/market-quote/quotes', { instrument_key: keys });
   return {
     reliance: normalizeStockQuote(pickQuote(raw, IDS.RELIANCE), IDS.RELIANCE, 'Reliance'),
     hdfcBank: normalizeStockQuote(pickQuote(raw, IDS.HDFCBANK), IDS.HDFCBANK, 'HDFC Bank'),
     iciciBank: normalizeStockQuote(pickQuote(raw, IDS.ICICIBANK), IDS.ICICIBANK, 'ICICI Bank'),
-    updatedAt: new Date().toISOString(),
+    fetched_at: new Date().toISOString(),
   };
 }
 
@@ -103,7 +109,7 @@ async function candles(underlying) {
   const bars = normalizeCandleRows(raw).slice(-78);
   let pv = 0, vol = 0;
   bars.forEach(b => { const tp = (b.high + b.low + b.close) / 3; pv += tp * (b.volume || 0); vol += b.volume || 0; });
-  return { bars, vwap: vol ? pv / vol : null };
+  return { bars, vwap: vol ? pv / vol : null, fetched_at: new Date().toISOString() };
 }
 
 async function optionContracts(underlying, expiry = 'current_week') {
@@ -140,7 +146,7 @@ async function optionchain(underlying, requested) {
   const raw = await upstox(UPSTOX_V2, '/option/chain', { instrument_key: IDS[underlying], expiry_date: expiry });
   const summary = summarizeChain(raw, expiry);
   if (!summary.rows.length) throw new Error(`Upstox returned no option-chain rows for ${underlying} ${expiry}.`);
-  return { underlying, ...summary, expiryDates: contractInfo.expiryDates };
+  return { underlying, ...summary, expiryDates: contractInfo.expiryDates, fetched_at: new Date().toISOString() };
 }
 
 export default async function handler(req, res) {
