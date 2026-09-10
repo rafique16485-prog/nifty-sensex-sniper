@@ -56,15 +56,23 @@ async function market() {
 function normalizeStockQuote(q, key, name) {
   if (!q) return { name, instrument_key: key, available: false };
   const last = Number(q.last_price);
-  const prev = q.cp == null ? (q.ohlc?.close == null ? null : Number(q.ohlc.close)) : Number(q.cp);
   const directChange = q.net_change == null ? null : Number(q.net_change);
-  const change = directChange != null && Number.isFinite(directChange) ? directChange : (prev != null && Number.isFinite(last) ? last - prev : null);
-  const changePct = prev ? (change / prev) * 100 : null;
+  const change = directChange != null && Number.isFinite(directChange)
+    ? directChange
+    : null;
+  // Full Market Quote's net_change is the session change. Derive the
+  // previous close from last - net_change so displayed values are consistent.
+  const prev = change != null && Number.isFinite(last)
+    ? last - change
+    : (q.ohlc?.close == null ? null : Number(q.ohlc.close));
+  const changePct = prev != null && prev !== 0 && change != null
+    ? (change / prev) * 100
+    : null;
   return {
     name,
     instrument_key: key,
     last_price: Number.isFinite(last) ? last : null,
-    prev_close: prev,
+    prev_close: prev != null && Number.isFinite(prev) ? prev : null,
     change: change != null && Number.isFinite(change) ? change : null,
     change_pct: changePct != null && Number.isFinite(changePct) ? changePct : null,
     volume: q.volume == null ? null : Number(q.volume),
@@ -74,8 +82,6 @@ function normalizeStockQuote(q, key, name) {
 
 async function leaders() {
   const keys = [IDS.RELIANCE, IDS.HDFCBANK, IDS.ICICIBANK].join(',');
-  // Full Market Quotes returns last_price, OHLC close, net_change and instrument_token.
-  // It is more robust for equities than relying on the deprecated LTP endpoint response shape.
   const raw = await upstox(UPSTOX_V2, '/market-quote/quotes', { instrument_key: keys });
   return {
     reliance: normalizeStockQuote(pickQuote(raw, IDS.RELIANCE), IDS.RELIANCE, 'Reliance'),
