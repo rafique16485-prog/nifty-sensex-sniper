@@ -73,7 +73,9 @@ function normalizeStockQuote(q, key, name) {
 
 async function leaders() {
   const keys = [IDS.RELIANCE, IDS.HDFCBANK, IDS.ICICIBANK].join(',');
-  const raw = await upstox(UPSTOX_V3, '/market-quote/ltp', { instrument_key: keys });
+  // Use the same stable LTP endpoint that already works for NIFTY/SENSEX/VIX.
+  // V3 is valid too, but V2 gives a consistent response for these equity keys.
+  const raw = await upstox(UPSTOX_V2, '/market-quote/ltp', { instrument_key: keys });
   return {
     reliance: normalizeStockQuote(pickQuote(raw, IDS.RELIANCE), IDS.RELIANCE, 'Reliance'),
     hdfcBank: normalizeStockQuote(pickQuote(raw, IDS.HDFCBANK), IDS.HDFCBANK, 'HDFC Bank'),
