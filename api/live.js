@@ -5,6 +5,9 @@ const IDS = {
   NIFTY: process.env.UPSTOX_NIFTY_KEY || 'NSE_INDEX|Nifty 50',
   SENSEX: process.env.UPSTOX_SENSEX_KEY || 'BSE_INDEX|SENSEX',
   VIX: process.env.UPSTOX_VIX_KEY || 'NSE_INDEX|India VIX',
+  RELIANCE: process.env.UPSTOX_RELIANCE_KEY || 'NSE_EQ|INE002A01018',
+  HDFCBANK: process.env.UPSTOX_HDFCBANK_KEY || 'NSE_EQ|INE040A01034',
+  ICICIBANK: process.env.UPSTOX_ICICIBANK_KEY || 'NSE_EQ|INE090A01021',
 };
 
 function json(res, status, body) {
@@ -41,7 +44,42 @@ function pickQuote(data, key) {
 async function market() {
   const keys = [IDS.NIFTY, IDS.SENSEX, IDS.VIX].join(',');
   const data = await upstox(UPSTOX_V2, '/market-quote/ltp', { instrument_key: keys });
-  return { nifty: pickQuote(data, IDS.NIFTY), sensex: pickQuote(data, IDS.SENSEX), vix: pickQuote(data, IDS.VIX), provider: 'Upstox', updatedAt: new Date().toISOString() };
+  return {
+    nifty: pickQuote(data, IDS.NIFTY),
+    sensex: pickQuote(data, IDS.SENSEX),
+    vix: pickQuote(data, IDS.VIX),
+    provider: 'Upstox',
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function normalizeStockQuote(q, key, name) {
+  if (!q) return { name, instrument_key: key, available: false };
+  const last = Number(q.last_price);
+  const prev = q.cp == null ? null : Number(q.cp);
+  const change = prev != null && Number.isFinite(last) ? last - prev : null;
+  const changePct = prev ? (change / prev) * 100 : null;
+  return {
+    name,
+    instrument_key: key,
+    last_price: Number.isFinite(last) ? last : null,
+    prev_close: prev,
+    change: change != null && Number.isFinite(change) ? change : null,
+    change_pct: changePct != null && Number.isFinite(changePct) ? changePct : null,
+    volume: q.volume == null ? null : Number(q.volume),
+    available: true,
+  };
+}
+
+async function leaders() {
+  const keys = [IDS.RELIANCE, IDS.HDFCBANK, IDS.ICICIBANK].join(',');
+  const raw = await upstox(UPSTOX_V3, '/market-quote/ltp', { instrument_key: keys });
+  return {
+    reliance: normalizeStockQuote(pickQuote(raw, IDS.RELIANCE), IDS.RELIANCE, 'Reliance'),
+    hdfcBank: normalizeStockQuote(pickQuote(raw, IDS.HDFCBANK), IDS.HDFCBANK, 'HDFC Bank'),
+    iciciBank: normalizeStockQuote(pickQuote(raw, IDS.ICICIBANK), IDS.ICICIBANK, 'ICICI Bank'),
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 function normalizeCandleRows(raw) {
@@ -62,9 +100,7 @@ async function candles(underlying) {
 async function optionContracts(underlying, expiry = 'current_week') {
   const key = IDS[underlying];
   if (!key) throw new Error('Unknown underlying');
-  // Do not send the relative expiry keyword here. Upstox supports it in the
-  // contract API, but some live accounts can return an empty contract list.
-  // Fetch the active contracts first, then select the nearest future expiry.
+  // Fetch active contracts first, then select the nearest future expiry.
   const raw = await upstox(UPSTOX_V2, '/option/contract', { instrument_key: key });
   const contracts = Array.isArray(raw?.data) ? raw.data : [];
   const dates = [...new Set(contracts.map(x => x.expiry).filter(Boolean))].sort();
@@ -105,6 +141,7 @@ export default async function handler(req, res) {
   try {
     if (!process.env.UPSTOX_ACCESS_TOKEN) return json(res, 200, { live: false, provider: 'Upstox', error: 'Upstox access token is not configured yet.' });
     if (action === 'market') return json(res, 200, { live: true, ...(await market()) });
+    if (action === 'leaders') return json(res, 200, { live: true, provider: 'Upstox', ...(await leaders()) });
     if (action === 'expiry') {
       const [nifty, sensex] = await Promise.all([optionContracts('NIFTY'), optionContracts('SENSEX')]);
       return json(res, 200, { live: true, provider: 'Upstox', nifty: nifty.expiryDates, sensex: sensex.expiryDates });
@@ -117,7 +154,7 @@ export default async function handler(req, res) {
       const underlying = String(req.query?.underlying || 'NIFTY').toUpperCase();
       return json(res, 200, { live: true, provider: 'Upstox', underlying, ...(await candles(underlying)) });
     }
-    return json(res, 200, { live: true, provider: 'Upstox', actions: ['market','expiry','chain','candles'] });
+    return json(res, 200, { live: true, provider: 'Upstox', actions: ['market','leaders','expiry','chain','candles'] });
   } catch (e) {
     return json(res, 502, { live: false, provider: 'Upstox', error: e.message });
   }
