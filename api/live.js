@@ -62,10 +62,16 @@ async function candles(underlying) {
 async function optionContracts(underlying, expiry = 'current_week') {
   const key = IDS[underlying];
   if (!key) throw new Error('Unknown underlying');
-  const raw = await upstox(UPSTOX_V2, '/option/contract', { instrument_key: key, expiry_date: expiry });
+  // Do not send the relative expiry keyword here. Upstox supports it in the
+  // contract API, but some live accounts can return an empty contract list.
+  // Fetch the active contracts first, then select the nearest future expiry.
+  const raw = await upstox(UPSTOX_V2, '/option/contract', { instrument_key: key });
   const contracts = Array.isArray(raw?.data) ? raw.data : [];
   const dates = [...new Set(contracts.map(x => x.expiry).filter(Boolean))].sort();
-  return { contracts, expiry: dates[0] || null, expiryDates: dates };
+  const today = new Date().toISOString().slice(0, 10);
+  const futureDates = dates.filter(d => d >= today);
+  const selected = futureDates[0] || dates[0] || null;
+  return { contracts, expiry: selected, expiryDates: dates };
 }
 
 function summarizeChain(raw, requestedExpiry) {
