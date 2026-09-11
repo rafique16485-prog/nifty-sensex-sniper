@@ -1,11 +1,51 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071b3a"><meta name="description" content="NIFTY and SENSEX trading intelligence dashboard"><link rel="manifest" href="manifest.json"><title>NIFTY Sensex Sniper V8</title><style>
 *{box-sizing:border-box}body{margin:0;background:#eef3f8;color:#10213b;font-family:system-ui,-apple-system,Segoe UI,sans-serif}.app{max-width:540px;margin:auto;min-height:100vh;background:#f7f9fc;padding-bottom:78px}.top{padding:18px 16px 14px;background:#071b3a;color:#fff;box-shadow:0 4px 18px #071b3a20}.brand{font-size:23px;font-weight:900}.sub{font-size:11px;color:#b7c7dc;margin-top:3px}.pill{display:inline-block;padding:7px 11px;border-radius:999px;background:#18365d;color:#cce1ff;font-size:10px;margin-top:10px;font-weight:800}.live{color:#37e0a6;background:#073e31}.grid,.rows,.levels,.cues{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid{padding:14px}.card{background:#fff;border:1px solid #dce5ef;border-radius:16px;padding:13px;box-shadow:0 5px 18px #18365d0b}.label{font-size:10px;color:#718198}.value{font-size:21px;font-weight:850;margin-top:4px;color:#10213b}.green{color:#079b6a!important}.red{color:#d94058!important}.yellow{color:#bd8610!important}.section{padding:4px 14px}.section h2{font-size:15px;margin:14px 2px 9px;color:#10213b}.verdict{border-radius:18px;padding:17px;border:1px solid #cbdbea;background:linear-gradient(135deg,#fff,#eef5fb);box-shadow:0 7px 24px #18365d10}.big{font-size:30px;font-weight:950}.score{height:8px;background:#dce7f1;border-radius:8px;overflow:hidden;margin:11px 0}.score i{display:block;height:100%;width:0;background:#16b985}.row,.level,.cue{background:#f3f7fb;border:1px solid #e1e9f1;border-radius:11px;padding:10px}.row b,.level b,.cue b{display:block;margin-top:4px}.mini{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #e7edf3;font-size:12px}.mini:last-child{border:0}.button{width:100%;border-radius:12px;padding:12px;margin-top:9px;font-weight:800;border:1px solid #315a87;background:#0b2a52;color:#fff}.tip,.status,.age{padding:10px;background:#fff;border:1px solid #e1e9f1;border-radius:10px;margin-top:8px;font-size:11px;line-height:1.45}.status{background:#f4f8fc}.age{font-weight:700}.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(540px,100%);height:64px;background:#fff;border-top:1px solid #dbe4ed;display:flex;justify-content:space-around;align-items:center;z-index:10;box-shadow:0 -5px 20px #10213b12}.nav span{font-size:9px;text-align:center;color:#6e7f94}.nav b{display:block;font-size:17px;color:#0b2a52;margin-bottom:1px}.nav .active span,.nav .active b{color:#087dca}.footer{padding:20px 14px 10px;color:#7a8a9d;font-size:9px;text-align:center}.retest{font-weight:900}.retest.ok{color:#079b6a}.retest.wait{color:#bd8610}.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.why-item{padding:10px;border-radius:11px;border:1px solid #e1e9f1;background:#fff}.why-item b{display:block;margin-top:3px}.waitbox{border-left:4px solid #bd8610;background:#fffdf6}.okbox{border-left:4px solid #079b6a;background:#f5fffb}.dangerbox{border-left:4px solid #d94058;background:#fff7f8}.analog-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.analog{background:#fff;border:1px solid #dce5ef;border-radius:14px;padding:11px}.analog-head{display:flex;justify-content:space-between;align-items:center}.analog-name{font-size:10px;color:#718198;font-weight:800}.analog-state{font-size:10px;font-weight:900}.gauge{position:relative;height:58px;margin:5px 2px 0;overflow:hidden}.arc{position:absolute;left:50%;bottom:-38px;transform:translateX(-50%);width:150px;height:75px;border-radius:150px 150px 0 0;background:conic-gradient(from 270deg,#d94058 0 25%,#f0c45a 25% 50%,#dce6ef 50% 50%,#b8e8d8 50% 75%,#079b6a 75% 100%);opacity:.95}.arc:after{content:'';position:absolute;left:8px;top:8px;width:134px;height:67px;border-radius:134px 134px 0 0;background:#fff}.needle{position:absolute;left:50%;bottom:4px;width:3px;height:48px;background:#10213b;border-radius:3px;transform-origin:50% 100%;transform:translateX(-50%) rotate(0deg);z-index:2}.hub{position:absolute;left:50%;bottom:0;width:11px;height:11px;border-radius:50%;background:#10213b;transform:translateX(-50%);z-index:3}.gauge-labels{display:flex;justify-content:space-between;font-size:8px;color:#7b8b9d}.analog-value{text-align:center;font-size:11px;font-weight:900;margin-top:-4px}.strength{margin-top:10px;background:#fff;border:1px solid #dce5ef;border-radius:14px;padding:12px}.strength-head{display:flex;justify-content:space-between;font-weight:800;font-size:11px}.strength-meter{height:10px;border-radius:8px;background:linear-gradient(90deg,#d94058 0 25%,#f0c45a 25% 50%,#dce6ef 50% 50%,#b8e8d8 50% 75%,#079b6a 75% 100%);margin:9px 0;position:relative}.strength-dot{position:absolute;top:-3px;width:16px;height:16px;border-radius:50%;background:#10213b;border:3px solid #fff;box-shadow:0 1px 5px #10213b40;transform:translateX(-50%)}.strength-scale{display:flex;justify-content:space-between;font-size:8px;color:#7b8b9d}
+
+/* SNIPER ONE-SCREEN MODE */
+@media (max-width:600px){
+  body{background:#eef3f8}
+  .app{max-width:540px;min-height:100vh;padding-bottom:70px}
+  .top{padding:10px 14px 9px}.brand{font-size:18px}.sub{font-size:9px}.pill{padding:5px 8px;margin-top:6px}
+  .grid{padding:8px;gap:7px}.card{border-radius:12px;padding:9px}.label{font-size:9px}.value{font-size:17px;margin-top:2px}
+  .section{padding:2px 9px}.section h2{font-size:13px;margin:8px 2px 6px}
+  .verdict{padding:11px;border-radius:14px}.big{font-size:27px}.score{margin:7px 0;height:6px}.row{padding:7px;border-radius:9px}
+  .status,.age{padding:7px;margin-top:5px;font-size:10px}.button{padding:9px;margin-top:6px}
+  /* ONE-SCREEN: hide secondary sections below the cockpit on mobile. */
+  .app > .section:nth-of-type(n+4){display:none}
+  .one-screen-details{display:block!important}
+  .nav{height:58px}.nav b{font-size:15px}.nav span{font-size:8px}
+}
+.one-screen-details{margin-top:7px}
+.os-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.os-chip{background:#f3f7fb;border:1px solid #dce5ef;border-radius:9px;padding:7px 5px;text-align:center;font-size:9px}
+.os-chip b{display:block;font-size:11px;margin-top:2px}
+.os-plan{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
+.os-plan div{background:#fff;border:1px solid #dce5ef;border-radius:9px;padding:7px;text-align:center}
+.os-plan span{display:block;font-size:8px;color:#718198}.os-plan b{font-size:12px}
+.os-reason{margin-top:7px;padding:7px 9px;border-radius:9px;background:#fff;border:1px solid #dce5ef;font-size:9px;line-height:1.35}
+
 </style></head><body><main class="app">
 <header class="top"><div class="brand">⚡ NIFTY Sensex Sniper</div><div class="sub">Sniper Engine V8 • SMC + Multi-Factor Confirmation</div><span class="pill" id="apiPill">LIVE API • NOT CONNECTED</span></header>
 <section class="grid"><div class="card"><div class="label">NIFTY 50</div><div class="value" id="nifty">—</div><div class="label">Upstox</div></div><div class="card"><div class="label">SENSEX</div><div class="value" id="sensex">—</div><div class="label">Upstox</div></div><div class="card"><div class="label">INDIA VIX</div><div class="value yellow" id="vix">—</div><div class="label">Volatility</div></div><div class="card"><div class="label">GIFT NIFTY</div><div class="value" id="giftNifty">—</div><div class="label" id="giftStatus">Upstox Global</div></div></section>
 <section class="section"><div class="cues"><div class="cue"><span class="label">MARKET STATUS</span><b id="marketStatus">Checking…</b></div><div class="cue"><span class="label">GLOBAL CUE</span><b id="globalCue">Waiting</b></div></div></section>
-<section class="section"><h2>🎯 Sniper Verdict</h2><div class="verdict"><div class="label">ENGINE OUTPUT</div><div class="big yellow" id="verdict">NO TRADE</div><div class="label" id="reason">Waiting for multi-factor confirmation</div><div class="score"><i id="scoreBar"></i></div><div class="rows"><div class="row"><span class="label">Direction Score</span><b id="score">— / 10</b></div><div class="row"><span class="label">Risk</span><b class="yellow" id="risk">WAIT</b></div></div><div class="status" id="status">🛡️ Conservative engine waiting for live data.</div><div class="age" id="age">Exchange snapshot: waiting</div><button class="button" onclick="refreshAll()">🔄 Refresh Live Data</button></div></section>
+<section class="section"><h2>🎯 Sniper Verdict</h2><div class="verdict"><div class="label">ENGINE OUTPUT</div><div class="big yellow" id="verdict">NO TRADE</div><div class="label" id="reason">Waiting for multi-factor confirmation</div><div class="score"><i id="scoreBar"></i></div><div class="rows"><div class="row"><span class="label">Direction Score</span><b id="score">— / 10</b></div><div class="row"><span class="label">Risk</span><b class="yellow" id="risk">WAIT</b></div></div><div class="one-screen-details" id="oneScreenDetails">
+<div class="os-grid">
+<div class="os-chip"><span>NIFTY</span><b id="osNifty">—</b></div>
+<div class="os-chip"><span>SENSEX</span><b id="osSensex">—</b></div>
+<div class="os-chip"><span>OPTIONS</span><b id="osOptions">—</b></div>
+<div class="os-chip"><span>SMC</span><b id="osSmc">—</b></div>
+<div class="os-chip"><span>LIQUIDITY</span><b id="osLiquidity">—</b></div>
+<div class="os-chip"><span>NEWS</span><b id="osNews">—</b></div>
+</div>
+<div class="os-plan">
+<div><span>ENTRY</span><b id="osEntry">—</b></div>
+<div><span>STOP LOSS</span><b id="osStop">—</b></div>
+<div><span>TARGET</span><b id="osTarget">—</b></div>
+</div>
+<div class="os-reason" id="osReason">🛡️ Waiting for live confirmation.</div>
+</div>
+<div class="status" id="status">🛡️ Conservative engine waiting for live data.</div><div class="age" id="age">Exchange snapshot: waiting</div><button class="button" onclick="refreshAll()">🔄 Refresh Live Data</button></div></section>
 <section class="section"><h2>📟 Analog Market Meters</h2><div class="analog-grid">
 <div class="analog"><div class="analog-head"><span class="analog-name">NIFTY</span><span class="analog-state yellow" id="aNiftyState">WAIT</span></div><div class="gauge"><div class="arc"></div><div class="needle" id="aNiftyNeedle"></div><div class="hub"></div></div><div class="gauge-labels"><span>BEAR</span><span>MIXED</span><span>BULL</span></div><div class="analog-value" id="aNiftyValue">MIXED</div></div>
 <div class="analog"><div class="analog-head"><span class="analog-name">SENSEX</span><span class="analog-state yellow" id="aSensexState">WAIT</span></div><div class="gauge"><div class="arc"></div><div class="needle" id="aSensexNeedle"></div><div class="hub"></div></div><div class="gauge-labels"><span>BEAR</span><span>MIXED</span><span>BULL</span></div><div class="analog-value" id="aSensexValue">MIXED</div></div>
@@ -55,4 +95,28 @@ async function loadPlanV2(){
  }catch(e){set('planDecision','NO TRADE');set('planReason','Plan engine unavailable — conservative fallback.');set('planUpdated','Plan V2: unavailable')}
 }
 loadPlanV2(); setInterval(loadPlanV2,30000);
-</script></body></html>
+</script><script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const text=(id,v)=>{const e=$(id);if(e)e.textContent=v==null||v===''?'—':String(v)};
+  const side=v=>{v=String(v||'').toUpperCase();return v.includes('BULL')||v==='CALL'||v==='CE'?'BULLISH':v.includes('BEAR')||v==='PUT'||v==='PE'?'BEARISH':'MIXED'};
+  async function get(u){const r=await fetch(u+(u.includes('?')?'&':'?')+'ts='+Date.now(),{cache:'no-store'});return r.json()}
+  async function loadOneScreen(){
+    try{
+      const [live,plan,news]=await Promise.all([get('/api/live?action=engine'),get('/api/plan'),get('/api/news-intel')]);
+      const n=live.nifty||{},s=live.sensex||{};
+      text('osNifty',side(n.side||n.bias||live.nifty_bias));
+      text('osSensex',side(s.side||s.bias||live.sensex_bias));
+      text('osOptions',side(live.optionFactor||live.option_factor||live.options?.side||live.options?.bias));
+      text('osSmc',side(live.smcFactor||live.smc_factor||live.smc?.side||live.smc?.bias));
+      text('osLiquidity',live.liquidity?.label||live.liquidityFactor||live.liquidity_factor||'WAIT');
+      text('osNews',side(news?.side||'NEUTRAL'));
+      const pl=plan&&plan.plan?plan.plan:{};
+      text('osEntry',pl.entry==null?'—':pl.entry);text('osStop',pl.stoploss==null?'—':pl.stoploss);text('osTarget',pl.target1==null?'—':pl.target1);
+      text('osReason',plan?.reason||plan?.gate||'🛡️ Waiting for confirmation.');
+    }catch(e){text('osReason','🛡️ Live confirmation unavailable — NO TRADE.')}
+  }
+  window.loadOneScreen=loadOneScreen;loadOneScreen();setInterval(loadOneScreen,30000);
+})();
+</script>
+</body></html>
