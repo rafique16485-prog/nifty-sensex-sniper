@@ -72,7 +72,7 @@ if 'function loadOneScreen()' not in s:
       const pl=plan&&plan.plan?plan.plan:{};
       text('osEntry',pl.entry==null?'—':pl.entry);text('osStop',pl.stoploss==null?'—':pl.stoploss);text('osTarget',pl.target1==null?'—':pl.target1);
       text('osReason',plan?.reason||plan?.gate||'🛡️ Waiting for confirmation.');
-    }catch(e){text('osReason','🛡️ Live confirmation unavailable — NO TRADE.')} 
+    }catch(e){text('osReason','🛡️ Live confirmation unavailable — NO TRADE.')}
   }
   window.loadOneScreen=loadOneScreen;loadOneScreen();setInterval(loadOneScreen,30000);
 })();
