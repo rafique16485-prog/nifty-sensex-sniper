@@ -5,9 +5,7 @@ import subprocess
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
 
-# The previous updater used a broad regex around /api/plan and could accidentally
-# remove the main dashboard script. Restore the last known-good dashboard only
-# when the core refresh function is missing.
+# Restore the last known-good dashboard only if the core app JS is missing.
 if 'function refreshAll' not in s:
     s = subprocess.check_output(
         ['git', 'show', '2ddf2fa4186f6d27ce76d3cb2d508c639fa582ac:index.html'],
@@ -25,13 +23,13 @@ s = s.replace(
     'One directional signal is not enough to claim agreement.'
 )
 
-# Replace the old V1 card only if it is still present.
-marker = '<section class="section"><h2>🎯 Sniper Trade Plan V1</h2>'
-start = s.find(marker)
-if start >= 0:
-    end = s.find('<section class="section">', start + len(marker))
+# Replace the existing V1 panel. The original panel has an id attribute.
+match = re.search(r'<section class="section"(?: id="sniperPlanV1Panel")?><h2>🎯 Sniper Trade Plan V1</h2>', s)
+if match:
+    start = match.start()
+    end = s.find('<section class="section">', match.end())
     if end < 0:
-        end = s.find('<footer', start)
+        end = s.find('<footer', match.end())
     if end > start:
         section = '''<section class="section"><h2>🎯 Sniper Trade Plan V2</h2><div class="verdict"><div class="label">MULTI-GATE EXECUTION PLAN</div><div class="big yellow" id="planDecision">NO TRADE</div><div class="label" id="planReason">Waiting for confirmation</div><div class="rows"><div class="row"><span class="label">Confidence</span><b id="planConfidence">— / 10</b></div><div class="row"><span class="label">Agreement</span><b id="planAgreement">INSUFFICIENT</b></div></div><div class="why-grid" id="planGates"><div class="why-item"><span class="label">System</span><b>Waiting…</b></div></div><div class="rows" style="margin-top:10px"><div class="row"><span class="label">Entry</span><b id="planEntry">—</b></div><div class="row"><span class="label">Stop Loss</span><b id="planStop">—</b></div><div class="row"><span class="label">Target 1</span><b id="planTarget1">—</b></div><div class="row"><span class="label">Target 2</span><b id="planTarget2">—</b></div></div><div class="tip waitbox" id="planGateReason"><b>WAIT:</b> Live plan gates will populate here.</div><div class="age" id="planUpdated">Plan V2: waiting</div></div><div class="tip">ELI5: PASS = confirmed, WAIT = missing confirmation, BLOCK = hard stop. Every critical gate must confirm before an entry is shown.</div></section>'''
         s = s[:start] + section + s[end:]
