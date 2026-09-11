@@ -22,6 +22,8 @@ jobs:
           fi
       - name: Upgrade Trade Plan V2 UI
         run: python scripts/upgrade_plan_ui.py
+      - name: Apply compact one-screen dashboard
+        run: python scripts/compact_one_screen.py
       - name: Normalize Upstox timestamps
         shell: bash
         run: |
@@ -53,7 +55,7 @@ jobs:
         run: |
           node --check api/live.js
           node --check api/plan.js
-          python -m py_compile scripts/upgrade_plan_ui.py
+          python -m py_compile scripts/upgrade_plan_ui.py scripts/compact_one_screen.py
           git diff --check
       - name: Commit repair
         run: |
@@ -62,7 +64,7 @@ jobs:
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add index.html api/live.js api/plan.js scripts/upgrade_plan_ui.py .github/workflows/repair-ui-freshness.yml
-            git commit -m "Harden Trade Plan V2 runtime and remove V1 loader"
+            git add index.html api/live.js api/plan.js scripts/upgrade_plan_ui.py scripts/compact_one_screen.py .github/workflows/repair-ui-freshness.yml .github/workflows/compact-one-screen.yml
+            git commit -m "Apply compact one-screen dashboard"
             git push
           fi
