@@ -31,7 +31,8 @@ if match:
         section = '''<section class="section"><h2>🎯 Sniper Trade Plan V2</h2><div class="verdict"><div class="label">MULTI-GATE EXECUTION PLAN</div><div class="big yellow" id="planDecision">NO TRADE</div><div class="label" id="planReason">Waiting for confirmation</div><div class="rows"><div class="row"><span class="label">Confidence</span><b id="planConfidence">— / 10</b></div><div class="row"><span class="label">Agreement</span><b id="planAgreement">INSUFFICIENT</b></div></div><div class="why-grid" id="planGates"><div class="why-item"><span class="label">System</span><b>Waiting…</b></div></div><div class="rows" style="margin-top:10px"><div class="row"><span class="label">Entry</span><b id="planEntry">—</b></div><div class="row"><span class="label">Stop Loss</span><b id="planStop">—</b></div><div class="row"><span class="label">Target 1</span><b id="planTarget1">—</b></div><div class="row"><span class="label">Target 2</span><b id="planTarget2">—</b></div></div><div class="tip waitbox" id="planGateReason"><b>WAIT:</b> Live plan gates will populate here.</div><div class="age" id="planUpdated">Plan V2: waiting</div></div><div class="tip">ELI5: PASS = confirmed, WAIT = missing confirmation, BLOCK = hard stop. Every critical gate must confirm before an entry is shown.</div></section>'''
         s = s[:start] + section + s[end:]
 
-for fn in ('loadPlanV1', 'loadPlan'):
+# Remove every legacy plan loader script. The old V1 loader is named loadSniperPlanV1.
+for fn in ('loadSniperPlanV1', 'loadPlanV1', 'loadPlan'):
     while True:
         pos = s.find('function ' + fn)
         if pos < 0:
