@@ -4,33 +4,29 @@ p = Path('index.html')
 s = p.read_text(encoding='utf-8')
 
 css = r'''
-/* SNIPER ONE-SCREEN MODE */
+/* SNIPER TRUE ONE-SCREEN COCKPIT */
 @media (max-width:600px){
-  body{background:#eef3f8}
-  .app{max-width:540px;min-height:100vh;padding-bottom:70px}
-  .top{padding:10px 14px 9px}.brand{font-size:18px}.sub{font-size:9px}.pill{padding:5px 8px;margin-top:6px}
-  .grid{padding:8px;gap:7px}.card{border-radius:12px;padding:9px}.label{font-size:9px}.value{font-size:17px;margin-top:2px}
-  .section{padding:2px 9px}.section h2{font-size:13px;margin:8px 2px 6px}
-  .verdict{padding:11px;border-radius:14px}.big{font-size:27px}.score{margin:7px 0;height:6px}.row{padding:7px;border-radius:9px}
-  .status,.age{padding:7px;margin-top:5px;font-size:10px}.button{padding:9px;margin-top:6px}
-  /* ONE-SCREEN: hide secondary sections below the cockpit on mobile. */
-  .app > .section:nth-of-type(n+4){display:none}
-  .one-screen-details{display:block!important}
-  .nav{height:58px}.nav b{font-size:15px}.nav span{font-size:8px}
+  body{background:#eef3f8;overflow-x:hidden}
+  .app{max-width:540px;min-height:100vh;padding-bottom:58px}
+  .top{padding:7px 12px 6px}.brand{font-size:17px;line-height:1.05}.sub{font-size:8px;margin-top:2px}.pill{padding:4px 7px;margin-top:4px;font-size:9px}
+  .grid{padding:6px;gap:5px}.card{border-radius:11px;padding:7px}.label{font-size:8px}.value{font-size:16px;margin-top:1px;line-height:1.05}
+  .section{padding:1px 7px}.section h2{font-size:12px;margin:5px 2px 4px}
+  .cues{gap:5px}.cue{padding:6px;border-radius:9px}.cue b{margin-top:2px;font-size:11px}
+  .verdict{padding:8px;border-radius:12px}.big{font-size:25px;line-height:1}.score{margin:5px 0;height:5px}.rows{gap:5px}.row{padding:6px;border-radius:8px}.row b{font-size:12px}
+  .one-screen-details{margin-top:5px!important;display:block!important}
+  .os-grid{gap:4px}.os-chip{padding:5px 3px;border-radius:7px;font-size:8px;line-height:1.05}.os-chip b{font-size:10px;margin-top:1px}
+  .os-plan{gap:4px;margin-top:5px}.os-plan div{padding:5px;border-radius:7px}.os-plan span{font-size:7px}.os-plan b{font-size:11px}
+  .os-reason{margin-top:5px;padding:5px 7px;border-radius:7px;font-size:8px;line-height:1.2}
+  /* Main cockpit contains only decision-critical information. */
+  .verdict>.status,.verdict>.age,.verdict>.button{display:none!important}
+  /* Secondary long-form sections stay available in the source but are hidden from the dashboard viewport. */
+  .app>.section:nth-of-type(n+4){display:none!important}
+  .nav{height:52px}.nav b{font-size:14px}.nav span{font-size:7px}
 }
-.one-screen-details{margin-top:7px}
-.os-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.os-chip{background:#f3f7fb;border:1px solid #dce5ef;border-radius:9px;padding:7px 5px;text-align:center;font-size:9px}
-.os-chip b{display:block;font-size:11px;margin-top:2px}
-.os-plan{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
-.os-plan div{background:#fff;border:1px solid #dce5ef;border-radius:9px;padding:7px;text-align:center}
-.os-plan span{display:block;font-size:8px;color:#718198}.os-plan b{font-size:12px}
-.os-reason{margin-top:7px;padding:7px 9px;border-radius:9px;background:#fff;border:1px solid #dce5ef;font-size:9px;line-height:1.35}
 '''
 
-marker = '</style>'
-if 'SNIPER ONE-SCREEN MODE' not in s:
-    s = s.replace(marker, css + '\n' + marker, 1)
+if 'SNIPER TRUE ONE-SCREEN COCKPIT' not in s:
+    s = s.replace('</style>', css + '\n</style>', 1)
 
 needle = '<div class="status" id="status">'
 if 'id="oneScreenDetails"' not in s:
@@ -79,5 +75,7 @@ if 'function loadOneScreen()' not in s:
 </script>'''
     s = s.replace('</body>', script + '\n</body>', 1)
 
+# Keep the generated HTML clean so validation does not fail on whitespace-only changes.
+s = '\n'.join(line.rstrip() for line in s.splitlines()) + '\n'
 p.write_text(s, encoding='utf-8')
-print('compact one-screen patch applied')
+print('true one-screen cockpit patch applied')
