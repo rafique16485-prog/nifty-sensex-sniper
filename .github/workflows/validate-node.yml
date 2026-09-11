@@ -1,0 +1,21 @@
+name: Validate Node APIs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check API syntax
+        run: |
+          node --check api/live.js
+          node --check api/forecast.js
+          node --check api/news.js
+          git diff --check
