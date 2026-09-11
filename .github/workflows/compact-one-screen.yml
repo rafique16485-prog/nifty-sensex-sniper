@@ -39,3 +39,4 @@ jobs:
             git commit -m 'Apply compact one-screen dashboard'
             git push
           fi
+      # Keeps the compact mobile cockpit idempotent across future dashboard repairs.
