@@ -12,7 +12,7 @@ function smcSide(s){return side(first(s?.bias,s?.side,s?.direction,s?.market_bia
 function optionsSide(l){return side(first(l?.options?.side,l?.options?.bias,l?.options?.direction,l?.option_side,l?.option_bias,l?.optionFactor,l?.option_factor,l?.option_flow?.side,l?.option_flow?.bias))}
 function technicalSide(l){return side(first(l?.verdict,l?.bias,l?.direction,l?.side,l?.market_bias))}
 function gate(status,reason){return{status,reason}}
-async function getJson(base,req){const u=new URL(base,`https://${req.headers.host}`);u.searchParams.set('ts',Date.now());const r=await fetch(u,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error(`${base} HTTP ${r.status}`);return r.json()}
+async function getJson(base,req){try{const host=req.headers.host||req.headers.Host;if(!host)throw Error('request host unavailable');const u=new URL(base,`https://${host}`);u.searchParams.set('ts',Date.now());const r=await fetch(u,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error(`${base} HTTP ${r.status}`);return await r.json()}catch(e){return{ok:false,error:String(e.message||e)}}}
 export default async function handler(req,res){res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');try{
 const [live,forecast,news]=await Promise.all([getJson(LIVE,req),getJson(FORECAST,req),getJson(NEWS,req)]);
 const n=live?.nifty||live?.NIFTY||{};const s=live?.sensex||live?.SENSEX||{};const last=num(first(n.last,n.last_price,n.price));const bars=Array.isArray(n.bars)?n.bars:[];const a=atr(bars);
