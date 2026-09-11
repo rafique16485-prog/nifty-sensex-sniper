@@ -13,7 +13,7 @@ css = r'''
   .section{padding:2px 9px}.section h2{font-size:13px;margin:8px 2px 6px}
   .verdict{padding:11px;border-radius:14px}.big{font-size:27px}.score{margin:7px 0;height:6px}.row{padding:7px;border-radius:9px}
   .status,.age{padding:7px;margin-top:5px;font-size:10px}.button{padding:9px;margin-top:6px}
-  /* Keep the primary cockpit compact; detailed modules remain in source but are hidden from the main screen. */
+  /* ONE-SCREEN: hide secondary sections below the cockpit on mobile. */
   .app > .section:nth-of-type(n+4){display:none}
   .one-screen-details{display:block!important}
   .nav{height:58px}.nav b{font-size:15px}.nav span{font-size:8px}
