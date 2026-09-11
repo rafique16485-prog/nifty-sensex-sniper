@@ -1,0 +1,32 @@
+name: Integrate News Radar
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add News Radar panel
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          if 'id="newsRadar"' not in s:
+              panel='''<section class="section" id="newsRadar"><h2>📰 Live Market News</h2><div class="card"><div class="mini"><span>News Sentiment</span><b id="newsSentiment" class="yellow">CONTEXT ONLY</b></div><div id="newsItems"><div class="tip">Loading latest market news…</div></div><div class="tip">🧠 News is context, not a standalone CALL/PUT trigger. Major headlines should increase caution when technical factors conflict.</div><div class="label" id="newsUpdated">News: waiting</div></div></section>'''
+              s=s.replace('</main>',panel+'</main>',1)
+              script='''<script>(async function loadNews(){try{const r=await fetch('/api/news?ts='+Date.now(),{cache:'no-store'});const d=await r.json();if(!d.ok)throw Error(d.error||'News unavailable');const box=document.getElementById('newsItems');if(box){box.innerHTML=(d.items||[]).map(x=>`<div class="mini"><span><b>${x.category||'Market'}</b><br>${x.title||'Headline unavailable'}<br><small>${x.published||''}</small></span></div>`).join('')||'<div class="tip">No headlines available.</div>'}const s=document.getElementById('newsSentiment');if(s)s.textContent=d.sentiment||'CONTEXT ONLY';const u=document.getElementById('newsUpdated');if(u)u.textContent=d.generated_at?`Updated ${new Date(d.generated_at).toLocaleTimeString()}`:'News ready';}catch(e){const box=document.getElementById('newsItems');if(box)box.innerHTML='<div class="tip waitbox">News temporarily unavailable — waiting for live feed.</div>';}})();</script>'''
+              s=s.replace('</body>',script+'</body>',1)
+              p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit dashboard integration
+        run: |
+          if git diff --quiet; then echo "News UI already integrated"; else git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"; git add index.html; git commit -m "Integrate Live News Radar"; git push; fi
