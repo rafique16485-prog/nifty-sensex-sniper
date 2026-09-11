@@ -46,6 +46,12 @@
   .nav{height:52px}.nav b{font-size:14px}.nav span{font-size:7px}
 }
 
+
+/* MORE DETAILS REVEAL FIX */
+@media (max-width:600px){
+  .app.details-open > .section:nth-of-type(n+4){display:block!important}
+}
+
 </style></head><body><main class="app">
 <header class="top"><div class="brand">⚡ NIFTY Sensex Sniper</div><div class="sub">Sniper Engine V8 • SMC + Multi-Factor Confirmation</div><span class="pill" id="apiPill">LIVE API • NOT CONNECTED</span></header>
 <section class="grid"><div class="card"><div class="label">NIFTY 50</div><div class="value" id="nifty">—</div><div class="label">Upstox</div></div><div class="card"><div class="label">SENSEX</div><div class="value" id="sensex">—</div><div class="label">Upstox</div></div><div class="card"><div class="label">INDIA VIX</div><div class="value yellow" id="vix">—</div><div class="label">Volatility</div></div><div class="card"><div class="label">GIFT NIFTY</div><div class="value" id="giftNifty">—</div><div class="label" id="giftStatus">Upstox Global</div></div></section>
@@ -139,6 +145,29 @@ loadPlanV2(); setInterval(loadPlanV2,30000);
     }catch(e){text('osReason','🛡️ Live confirmation unavailable — NO TRADE.')}
   }
   window.loadOneScreen=loadOneScreen;loadOneScreen();setInterval(loadOneScreen,30000);
+})();
+</script>
+<script>
+/* MORE DETAILS CLICK FIX */
+(function(){
+  function wireMoreDetails(){
+    const app=document.querySelector('.app');
+    const btn=document.getElementById('moreDetailsBtn');
+    if(!app||!btn||btn.dataset.wired==='1')return;
+    btn.dataset.wired='1';
+    btn.addEventListener('click',function(ev){
+      ev.preventDefault();
+      const open=app.classList.toggle('details-open');
+      btn.textContent=open?'▴ LESS DETAILS':'▾ MORE DETAILS';
+      if(open){
+        const first=app.querySelector('.section:nth-of-type(4)');
+        if(first) first.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wireMoreDetails);
+  else wireMoreDetails();
+  setTimeout(wireMoreDetails,500);
 })();
 </script>
 </body></html>
