@@ -1,0 +1,33 @@
+name: Integrate Sniper Confidence Engine V2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Sniper Confidence V2 panel
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          if 'id="sniperV2Panel"' not in s:
+              panel='''<section class="section" id="sniperV2Panel"><h2>🎯 Sniper Confidence Engine V2</h2><div class="verdict"><div class="label">CROSS-MARKET DECISION</div><div class="big yellow" id="sv2Decision">WAIT</div><div class="rows"><div class="row"><span class="label">Confidence</span><b id="sv2Confidence">— / 10</b></div><div class="row"><span class="label">Agreement</span><b id="sv2Agreement">—%</b></div></div><div class="mini"><span>Technical</span><b id="sv2Tech">WAIT</b></div><div class="mini"><span>Forecast</span><b id="sv2Forecast">WAIT</b></div><div class="mini"><span>News</span><b id="sv2News">WAIT</b></div><div class="status" id="sv2Gate">Waiting for live confirmation…</div><div class="tip" id="sv2Why">V2 uses independent signal groups. Neutral signals do not count as directional agreement.</div><div class="label" id="sv2Updated">Sniper V2: waiting</div></div></section>'''
+              s=s.replace('</main>',panel+'</main>',1)
+          if 'loadSniperConfidenceV2' not in s:
+              script='''<script>(async function loadSniperConfidenceV2(){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};const side=v=>{v=String(v||'').toUpperCase();return v.includes('BULL')||v==='CALL'?'BULL':v.includes('BEAR')||v==='PUT'?'BEAR':'NEUTRAL'};const color=(id,v)=>{const e=document.getElementById(id);if(!e)return;e.className=e.className.replace(/\\b(green|red|yellow)\\b/g,'').trim()+' '+(v==='BULL'||v==='CALL'?'green':v==='BEAR'||v==='PUT'?'red':'yellow')};try{const ts=Date.now();const [lr,fr,nr]=await Promise.all([fetch('/api/live?action=engine&ts='+ts,{cache:'no-store'}),fetch('/api/forecast?ts='+ts,{cache:'no-store'}),fetch('/api/news-intel?ts='+ts,{cache:'no-store'})]);const [l,f,n]=await Promise.all([lr.json(),fr.json(),nr.json()]);if(!l||l.ok===false)throw Error('live unavailable');const tech=side(l.verdict||l.bias||l.direction||l.side||l.market_bias);const nf=side((f.nifty||{}).bias);const sf=side((f.sensex||{}).bias);const forecast=(nf===sf&&nf!=='NEUTRAL')?nf:'NEUTRAL';const news=side(n.side);const groups=[tech,forecast,news];const bull=groups.filter(x=>x==='BULL').length,bear=groups.filter(x=>x==='BEAR').length;const directional=bull+bear;let agreement=directional===0?0:Math.round(Math.max(bull,bear)/directional*100);let decision='NO TRADE',gate='No directional confirmation.';if(news==='BEAR'&&String(n.risk||'').toUpperCase()==='HIGH'){gate='High news risk blocks directional trade.';}else if(bull>=2&&bull>bear){decision='CALL';gate='Two independent bullish groups aligned.';}else if(bear>=2&&bear>bull){decision='PUT';gate='Two independent bearish groups aligned.';}else if(directional===0){gate='All signal groups are neutral.';}else{gate='Signals are mixed; confirmation is insufficient.';}let base=5+Math.max(bull,bear)*1.5-Math.min(bull,bear)*1.0;if(decision==='NO TRADE')base=Math.min(base,6.5);if(news==='BEAR'&&String(n.risk||'').toUpperCase()==='HIGH')base=Math.min(base,5.5);if(decision!=='NO TRADE')base=Math.min(9.5,base);const confidence=Math.max(0,Math.min(10,Math.round(base*10)/10));set('sv2Decision',decision);set('sv2Confidence',confidence+' / 10');set('sv2Agreement',agreement+'%');set('sv2Tech',tech);set('sv2Forecast',forecast);set('sv2News',news+' • Risk '+String(n.risk||'UNKNOWN').toUpperCase());set('sv2Gate',gate);set('sv2Why',`V2: ${bull} bullish • ${bear} bearish • ${groups.filter(x=>x==='NEUTRAL').length} neutral. Neutral signals are excluded from agreement.`);set('sv2Updated','Updated '+new Date().toLocaleTimeString()+' • Sniper Confidence V2');color('sv2Decision',decision==='CALL'?'CALL':decision==='PUT'?'PUT':'NO TRADE');['sv2Tech','sv2Forecast','sv2News'].forEach(id=>color(id,side(document.getElementById(id)?.textContent)));}catch(e){set('sv2Decision','NO TRADE');set('sv2Confidence','— / 10');set('sv2Agreement','—%');set('sv2Gate','Confidence engine waiting for live data.');set('sv2Updated','Sniper V2 unavailable — conservative fallback');}})();</script>'''
+              s=s.replace('</body>',script+'</body>',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit dashboard integration
+        run: |
+          if git diff --quiet; then echo "Sniper Confidence V2 already integrated"; else git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"; git add index.html; git commit -m "Integrate Sniper Confidence Engine V2"; git push; fi
