@@ -1,0 +1,43 @@
+name: Integrate Forecast UI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add Forecast panel to dashboard
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          if 'id="forecastPanel"' not in s:
+              panel='''<section class="section" id="forecastPanel"><h2>🔮 Market Forecast</h2><div class="card"><div class="grid" style="padding:0"><div class="card"><span class="label">NIFTY FORECAST</span><b id="forecastNifty" class="yellow">Loading…</b><div class="label" id="forecastNiftyProb">—</div></div><div class="card"><span class="label">SENSEX FORECAST</span><b id="forecastSensex" class="yellow">Loading…</b><div class="label" id="forecastSensexProb">—</div></div></div><div class="mini"><span>Expected Volatility</span><b id="forecastVol">—</b></div><div class="mini"><span>Forecast Confidence</span><b id="forecastConfidence">— / 10</b></div><div class="tip">🧠 Probability-based 5m forecast using momentum, VWAP and RSI. This is educational analysis, not a guaranteed prediction.</div><div class="label" id="forecastUpdated">Forecast: waiting</div></div></section>'''
+              s=s.replace('</main>',panel+'</main>',1)
+              script='''<script>(async function loadForecast(){try{const r=await fetch('/api/forecast?ts='+Date.now(),{cache:'no-store'});const d=await r.json();if(!d.ok)throw Error(d.error||'Forecast unavailable');const n=d.nifty||{},x=d.sensex||{};const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set('forecastNifty',n.bias||'NEUTRAL');set('forecastSensex',x.bias||'NEUTRAL');set('forecastNiftyProb',`Bull ${n.bull_probability??'—'}% • Bear ${n.bear_probability??'—'}% • Neutral ${n.neutral_probability??'—'}%`);set('forecastSensexProb',`Bull ${x.bull_probability??'—'}% • Bear ${x.bear_probability??'—'}% • Neutral ${x.neutral_probability??'—'}%`);set('forecastVol',`${n.volatility||'—'} / ${x.volatility||'—'}`);set('forecastConfidence',`${n.confidence??'—'} / 10 • ${x.confidence??'—'} / 10`);set('forecastUpdated',d.generated_at?`Updated ${new Date(d.generated_at).toLocaleTimeString()}`:'Forecast ready');['forecastNifty','forecastSensex'].forEach(id=>{const e=document.getElementById(id);if(e)e.className=(e.textContent==='BULLISH'?'green':e.textContent==='BEARISH'?'red':'yellow')});}catch(e){['forecastNifty','forecastSensex','forecastVol','forecastConfidence'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='WAIT'});const u=document.getElementById('forecastUpdated');if(u)u.textContent='Forecast unavailable — waiting for live data';}})();</script>'''
+              s=s.replace('</body>',script+'</body>',1)
+              p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Commit dashboard integration
+        run: |
+          if git diff --quiet; then
+            echo "Forecast UI already integrated"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add index.html
+            git commit -m "Integrate Forecast V1 into dashboard"
+            git push
+          fi
