@@ -1,0 +1,59 @@
+name: Repair UI and Freshness
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair dashboard and exchange freshness
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          # 1) Remove the repeated agreement sentence from the Sniper Confidence card.
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          repeated = ('One directional signal is not enough to claim agreement. ' * 3).strip()
+          s = s.replace(repeated, 'One directional signal is not enough to claim agreement.')
+          s = s.replace(
+              'One directional signal is not enough to claim agreement. One directional signal is not enough to claim agreement.',
+              'One directional signal is not enough to claim agreement.'
+          )
+          p.write_text(s, encoding='utf-8')
+
+          # 2) Use actual last-trade timestamps for exchange freshness.
+          p = Path('api/live.js')
+          s = p.read_text(encoding='utf-8')
+          old = "async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const ts=[n?.timestamp,s?.timestamp,v?.timestamp,g?.timestamp].filter(Boolean).map(x=>new Date(x).getTime()).filter(Number.isFinite);return{nifty:quote(n),sensex:quote(s),vix:quote(v),gift_nifty:quote(g),provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
+          new = "async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const nq=quote(n),sq=quote(s),vq=quote(v),gq=quote(g);const ts=[nq?.last_trade_time,sq?.last_trade_time,vq?.last_trade_time,nq?.timestamp,sq?.timestamp,vq?.timestamp].filter(Boolean).map(x=>new Date(x).getTime()).filter(Number.isFinite);return{nifty:nq,sensex:sq,vix:vq,gift_nifty:gq,provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
+          if old in s:
+              s = s.replace(old, new, 1)
+          else:
+              print('market() exact pattern not found; leaving backend unchanged')
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Validate
+        run: |
+          node --check api/live.js
+          git diff --check
+      - name: Commit repair
+        run: |
+          if git diff --quiet; then
+            echo "No repair needed"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add index.html api/live.js
+            git commit -m "Repair agreement text and exchange freshness"
+            git push
+          fi
