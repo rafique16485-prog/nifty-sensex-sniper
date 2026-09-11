@@ -17,10 +17,12 @@ css = r'''
   .os-grid{gap:4px}.os-chip{padding:5px 3px;border-radius:7px;font-size:8px;line-height:1.05}.os-chip b{font-size:10px;margin-top:1px}
   .os-plan{gap:4px;margin-top:5px}.os-plan div{padding:5px;border-radius:7px}.os-plan span{font-size:7px}.os-plan b{font-size:11px}
   .os-reason{margin-top:5px;padding:5px 7px;border-radius:7px;font-size:8px;line-height:1.2}
+  .more-details{display:block;width:100%;margin-top:5px;padding:7px 9px;border:1px solid #315a87;border-radius:8px;background:#fff;color:#0b2a52;font-weight:900;font-size:9px;text-align:center}
   /* Main cockpit contains only decision-critical information. */
   .verdict>.status,.verdict>.age,.verdict>.button{display:none!important}
-  /* Secondary long-form sections stay available in the source but are hidden from the dashboard viewport. */
+  /* Secondary long-form sections stay hidden until More Details is tapped. */
   .app>.section:nth-of-type(n+4){display:none!important}
+  .app.details-open>.section:nth-of-type(n+4){display:block!important}
   .nav{height:52px}.nav b{font-size:14px}.nav span{font-size:7px}
 }
 '''
@@ -45,6 +47,7 @@ if 'id="oneScreenDetails"' not in s:
 <div><span>TARGET</span><b id="osTarget">—</b></div>
 </div>
 <div class="os-reason" id="osReason">🛡️ Waiting for live confirmation.</div>
+<button class="more-details" id="moreDetailsBtn" type="button">▾ MORE DETAILS</button>
 </div>'''
     s = s.replace(needle, insert + '\n' + needle, 1)
 
@@ -70,12 +73,17 @@ if 'function loadOneScreen()' not in s:
       text('osReason',plan?.reason||plan?.gate||'🛡️ Waiting for confirmation.');
     }catch(e){text('osReason','🛡️ Live confirmation unavailable — NO TRADE.')}
   }
+  const btn=$('moreDetailsBtn');
+  if(btn)btn.addEventListener('click',()=>{
+    document.querySelector('.app')?.classList.toggle('details-open');
+    const open=document.querySelector('.app')?.classList.contains('details-open');
+    btn.textContent=open?'▴ LESS DETAILS':'▾ MORE DETAILS';
+  });
   window.loadOneScreen=loadOneScreen;loadOneScreen();setInterval(loadOneScreen,30000);
 })();
 </script>'''
     s = s.replace('</body>', script + '\n</body>', 1)
 
-# Keep the generated HTML clean so validation does not fail on whitespace-only changes.
 s = '\n'.join(line.rstrip() for line in s.splitlines()) + '\n'
 p.write_text(s, encoding='utf-8')
-print('true one-screen cockpit patch applied')
+print('true one-screen cockpit + More Details button patch applied')
