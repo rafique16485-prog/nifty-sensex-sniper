@@ -1,0 +1,36 @@
+name: Upgrade News Intelligence V2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upgrade News Intelligence panel
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          start=s.find('<script>(async function loadNewsIntel()')
+          if start < 0:
+              raise SystemExit('News Intelligence script not found')
+          end=s.find('</script>', start)
+          if end < 0:
+              raise SystemExit('News Intelligence script end not found')
+          old=s[start:end+9]
+          new='''<script>(async function loadNewsIntelV2(){try{const r=await fetch('/api/news-intel?ts='+Date.now(),{cache:'no-store'});const d=await r.json();const b=document.getElementById('newsIntelBias'),risk=document.getElementById('newsIntelRisk'),score=document.getElementById('newsIntelScore'),gate=document.getElementById('newsIntelGate'),u=document.getElementById('newsIntelUpdated');if(b)b.textContent=d.side||'MIXED';if(risk)risk.textContent=d.risk||'UNKNOWN';if(score)score.textContent=String(d.score??0);if(gate)gate.textContent=`News V2: ${d.side||'MIXED'} • Risk ${d.risk||'UNKNOWN'} • Fresh ${d.fresh_count||0}/${d.headline_count||0} • Ignored stale ${d.ignored_count||0}`;if(u)u.textContent=d.generated_at?`Updated ${new Date(d.generated_at).toLocaleTimeString()} • V2 Recency + Duplicate Filter`:'News Intelligence ready';}catch(e){const g=document.getElementById('newsIntelGate');if(g)g.textContent='News Intelligence V2 temporarily unavailable — technical engine remains conservative.';}})();</script>'''
+          p.write_text(s[:start]+new+s[end+9:],encoding='utf-8')
+          PY
+      - name: Commit dashboard upgrade
+        run: |
+          if git diff --quiet; then echo "News Intelligence V2 already integrated"; else git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"; git add index.html; git commit -m "Upgrade News Intelligence UI to V2"; git push; fi
