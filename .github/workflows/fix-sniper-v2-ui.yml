@@ -1,0 +1,40 @@
+name: Fix Sniper V2 UI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix V2 agreement and remove duplicate V1 panel
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          # Remove the old V1 confidence panel by its unique heading and enclosing section.
+          marker='🎯 Sniper Confidence Engine</h2>'
+          pos=s.find(marker)
+          if pos >= 0 and 'id="sniperV2Panel"' in s and pos < s.find('id="sniperV2Panel"'):
+              start=s.rfind('<section',0,pos)
+              end=s.find('</section>',pos)
+              if start >= 0 and end >= 0:
+                  s=s[:start]+s[end+10:]
+          # Replace the V2 agreement display so INSUFFICIENT does not get a trailing percent sign.
+          s=s.replace("set('sv2Agreement',agreement+'%');", "set('sv2Agreement',agreement==='INSUFFICIENT'?'INSUFFICIENT':agreement+'%');")
+          # Also fix any generated V2 script variant that uses a template expression.
+          s=s.replace("set('sv2Agreement',agreement+'%')", "set('sv2Agreement',agreement==='INSUFFICIENT'?'INSUFFICIENT':agreement+'%')")
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit UI fix
+        run: |
+          if git diff --quiet; then echo "V2 UI already fixed"; else git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"; git add index.html; git commit -m "Fix Sniper V2 agreement label and remove V1 duplicate"; git push; fi
