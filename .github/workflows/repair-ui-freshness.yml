@@ -13,6 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Restore dashboard if JS was damaged
+        shell: bash
+        run: |
+          if ! grep -q "function refreshAll" index.html; then
+            echo "Core dashboard JS missing; restoring last known-good index.html"
+            curl -fsSL "https://raw.githubusercontent.com/rafique16485-prog/nifty-sensex-sniper/2ddf2fa4186f6d27ce76d3cb2d508c639fa582ac/index.html" -o index.html
+          fi
       - name: Upgrade Trade Plan V2 UI
         run: python scripts/upgrade_plan_ui.py
       - name: Normalize Upstox timestamps
@@ -25,7 +32,7 @@ jobs:
           old_quote="function quote(q){if(!q)return null;const last=Number(q.last_price),ch=q.net_change==null?null:Number(q.net_change),prev=q.prev_close_price==null?Number(q.ohlc?.close):Number(q.prev_close_price);return{last_price:Number.isFinite(last)?last:null,change:Number.isFinite(ch)?ch:null,change_pct:Number.isFinite(prev)&&prev?ch/prev*100:null,timestamp:q.timestamp||null,last_trade_time:q.last_trade_time?new Date(Number(q.last_trade_time)).toISOString():null,volume:q.volume==null?null:Number(q.volume)}}"
           new_quote="function timeMs(v){if(v==null)return null;if(typeof v==='string'){const parsed=Date.parse(v);if(Number.isFinite(parsed))return parsed;v=Number(v)}else v=Number(v);if(!Number.isFinite(v))return null;if(v>1e17)v/=1e6;else if(v>1e14)v/=1e3;else if(v<1e11)v*=1e3;const d=new Date(v);return Number.isFinite(d.getTime())?d.getTime():null}function isoTime(v){const m=timeMs(v);return m==null?null:new Date(m).toISOString()}function quote(q){if(!q)return null;const last=Number(q.last_price),ch=q.net_change==null?null:Number(q.net_change),prev=q.prev_close_price==null?Number(q.ohlc?.close):Number(q.prev_close_price);return{last_price:Number.isFinite(last)?last:null,change:Number.isFinite(ch)?ch:null,change_pct:Number.isFinite(prev)&&prev?ch/prev*100:null,timestamp:q.timestamp||null,last_trade_time:isoTime(q.last_trade_time),volume:q.volume==null?null:Number(q.volume)}}"
           if old_quote in s: s=s.replace(old_quote,new_quote,1)
-          old_market="async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const nq=quote(n),sq=quote(s),vq=quote(v),gq=quote(g);const ts=[nq?.last_trade_time,sq?.last_trade_time,vq?.last_trade_time,nq?.timestamp,sq?.timestamp,vq?.timestamp].filter(Boolean).map(x=>new Date(x).getTime()).filter(Number.isFinite);return{nifty:nq,sensex:sq,vix:vq,gift_nifty:gq,provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
+          old_market="async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const nq=quote(n),sq=quote(s),vq=quote(v),gq=quote(g);const ts=[nq?.last_trade_time,sq?.last_trade_time,vq?.last_trade_time,nq?.timestamp,sq?.timestamp].filter(Boolean).map(x=>new Date(x).getTime()).filter(Number.isFinite);return{nifty:nq,sensex:sq,vix:vq,gift_nifty:gq,provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
           new_market="async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const nq=quote(n),sq=quote(s),vq=quote(v),gq=quote(g);const ts=[nq?.last_trade_time,sq?.last_trade_time,nq?.timestamp,sq?.timestamp].map(timeMs).filter(Number.isFinite);return{nifty:nq,sensex:sq,vix:vq,gift_nifty:gq,provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
           if old_market in s: s=s.replace(old_market,new_market,1)
           p.write_text(s,encoding='utf-8')
