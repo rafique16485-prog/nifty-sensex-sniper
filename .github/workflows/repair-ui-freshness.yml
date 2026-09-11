@@ -37,6 +37,18 @@ jobs:
           if old_market in s: s=s.replace(old_market,new_market,1)
           p.write_text(s,encoding='utf-8')
           PY
+      - name: Harden Trade Plan dependencies
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('api/plan.js')
+          s=p.read_text(encoding='utf-8')
+          old="async function getJson(base,req){const u=new URL(base,`https://${req.headers.host}`);u.searchParams.set('ts',Date.now());const r=await fetch(u,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error(`${base} HTTP ${r.status}`);return r.json()}"
+          new="async function getJson(base,req){try{const host=req.headers.host||req.headers.Host;if(!host)throw Error('request host unavailable');const u=new URL(base,`https://${host}`);u.searchParams.set('ts',Date.now());const r=await fetch(u,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error(`${base} HTTP ${r.status}`);return await r.json()}catch(e){return{ok:false,error:String(e.message||e)}}}"
+          if old in s: s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Validate
         run: |
           node --check api/live.js
@@ -50,7 +62,7 @@ jobs:
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add index.html api/live.js
-            git commit -m "Apply Trade Plan V2 UI and freshness repair"
+            git add index.html api/live.js api/plan.js scripts/upgrade_plan_ui.py .github/workflows/repair-ui-freshness.yml
+            git commit -m "Harden Trade Plan V2 runtime and remove V1 loader"
             git push
           fi
