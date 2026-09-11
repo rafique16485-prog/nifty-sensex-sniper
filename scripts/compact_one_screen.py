@@ -17,10 +17,10 @@ css = r'''
   .os-grid{gap:4px}.os-chip{padding:5px 3px;border-radius:7px;font-size:8px;line-height:1.05}.os-chip b{font-size:10px;margin-top:1px}
   .os-plan{gap:4px;margin-top:5px}.os-plan div{padding:5px;border-radius:7px}.os-plan span{font-size:7px}.os-plan b{font-size:11px}
   .os-reason{margin-top:5px;padding:5px 7px;border-radius:7px;font-size:8px;line-height:1.2}
-  .more-details{display:block;width:100%;margin-top:5px;padding:7px 9px;border:1px solid #315a87;border-radius:8px;background:#fff;color:#0b2a52;font-weight:900;font-size:9px;text-align:center}
+  .more-details{display:block;width:100%;margin-top:5px;padding:7px 9px;border:1px solid #315a87;border-radius:8px;background:#fff;color:#0b2a52;font-weight:900;font-size:9px;text-align:center;cursor:pointer;touch-action:manipulation}
+  .app>.section:nth-of-type(n+4){display:none!important}
   .app.details-open>.section:nth-of-type(n+4){display:block!important}
   .verdict>.status,.verdict>.age,.verdict>.button{display:none!important}
-  .app>.section:nth-of-type(n+4){display:none!important}
   .nav{height:52px}.nav b{font-size:14px}.nav span{font-size:7px}
 }
 '''
@@ -52,39 +52,47 @@ elif 'id="moreDetailsBtn"' not in s:
     marker = '<div class="os-reason" id="osReason">🛡️ Waiting for live confirmation.</div>'
     s = s.replace(marker, marker + '\n' + button, 1)
 
-if 'function loadOneScreen()' not in s:
-    script = r'''<script>
+# Always ensure the mobile reveal rule exists AFTER the mobile hide rule.
+reveal_marker = '/* MORE DETAILS REVEAL FIX */'
+reveal_css = '''
+/* MORE DETAILS REVEAL FIX */
+@media (max-width:600px){
+  .app.details-open > .section:nth-of-type(n+4){display:block!important}
+}
+'''
+if reveal_marker not in s:
+    s = s.replace('</style>', reveal_css + '\n</style>', 1)
+
+# Always ensure the click handler exists. Older versions could already contain
+# loadOneScreen(), which prevented the previous idempotent block from adding it.
+handler_marker = '/* MORE DETAILS CLICK FIX */'
+handler = r'''<script>
+/* MORE DETAILS CLICK FIX */
 (function(){
-  const $=id=>document.getElementById(id);
-  const text=(id,v)=>{const e=$(id);if(e)e.textContent=v==null||v===''?'—':String(v)};
-  const side=v=>{v=String(v||'').toUpperCase();return v.includes('BULL')||v==='CALL'||v==='CE'?'BULLISH':v.includes('BEAR')||v==='PUT'||v==='PE'?'BEARISH':'MIXED'};
-  async function get(u){const r=await fetch(u+(u.includes('?')?'&':'?')+'ts='+Date.now(),{cache:'no-store'});return r.json()}
-  async function loadOneScreen(){
-    try{
-      const [live,plan,news]=await Promise.all([get('/api/live?action=engine'),get('/api/plan'),get('/api/news-intel')]);
-      const n=live.nifty||{},s=live.sensex||{};
-      text('osNifty',side(n.side||n.bias||live.nifty_bias));
-      text('osSensex',side(s.side||s.bias||live.sensex_bias));
-      text('osOptions',side(live.optionFactor||live.option_factor||live.options?.side||live.options?.bias));
-      text('osSmc',side(live.smcFactor||live.smc_factor||live.smc?.side||live.smc?.bias));
-      text('osLiquidity',live.liquidity?.label||live.liquidityFactor||live.liquidity_factor||'WAIT');
-      text('osNews',side(news?.side||'NEUTRAL'));
-      const pl=plan&&plan.plan?plan.plan:{};
-      text('osEntry',pl.entry==null?'—':pl.entry);text('osStop',pl.stoploss==null?'—':pl.stoploss);text('osTarget',pl.target1==null?'—':pl.target1);
-      text('osReason',plan?.reason||plan?.gate||'🛡️ Waiting for confirmation.');
-    }catch(e){text('osReason','🛡️ Live confirmation unavailable — NO TRADE.')}
+  function wireMoreDetails(){
+    const app=document.querySelector('.app');
+    const btn=document.getElementById('moreDetailsBtn');
+    if(!app||!btn||btn.dataset.wired==='1')return;
+    btn.dataset.wired='1';
+    btn.addEventListener('click',function(ev){
+      ev.preventDefault();
+      const open=app.classList.toggle('details-open');
+      btn.textContent=open?'▴ LESS DETAILS':'▾ MORE DETAILS';
+      if(open){
+        const first=app.querySelector('.section:nth-of-type(4)');
+        if(first) first.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    });
   }
-  const btn=$('moreDetailsBtn');
-  if(btn)btn.addEventListener('click',()=>{
-    document.querySelector('.app')?.classList.toggle('details-open');
-    const open=document.querySelector('.app')?.classList.contains('details-open');
-    btn.textContent=open?'▴ LESS DETAILS':'▾ MORE DETAILS';
-  });
-  window.loadOneScreen=loadOneScreen;loadOneScreen();setInterval(loadOneScreen,30000);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wireMoreDetails);
+  else wireMoreDetails();
+  setTimeout(wireMoreDetails,500);
 })();
-</script>'''
-    s = s.replace('</body>', script + '\n</body>', 1)
+</script>
+'''
+if handler_marker not in s:
+    s = s.replace('</body>', handler + '</body>', 1)
 
 s = '\n'.join(line.rstrip() for line in s.splitlines()) + '\n'
 p.write_text(s, encoding='utf-8')
-print('true one-screen cockpit + More Details button patch applied')
+print('More Details click + reveal fix applied')
