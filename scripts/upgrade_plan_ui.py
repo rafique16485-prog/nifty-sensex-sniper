@@ -1,11 +1,21 @@
 from pathlib import Path
 import re
+import subprocess
 
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
-original = s
 
-# Remove repeated confidence sentence.
+# The previous updater used a broad regex around /api/plan and could accidentally
+# remove the main dashboard script. Restore the last known-good dashboard only
+# when the core refresh function is missing.
+if 'function refreshAll' not in s:
+    s = subprocess.check_output(
+        ['git', 'show', '2ddf2fa4186f6d27ce76d3cb2d508c639fa582ac:index.html'],
+        text=True,
+        encoding='utf-8'
+    )
+
+# Remove repeated confidence sentence, but only the duplicated text itself.
 s = s.replace(
     ('One directional signal is not enough to claim agreement. ' * 3).strip(),
     'One directional signal is not enough to claim agreement.'
@@ -26,11 +36,20 @@ if start >= 0:
         section = '''<section class="section"><h2>🎯 Sniper Trade Plan V2</h2><div class="verdict"><div class="label">MULTI-GATE EXECUTION PLAN</div><div class="big yellow" id="planDecision">NO TRADE</div><div class="label" id="planReason">Waiting for confirmation</div><div class="rows"><div class="row"><span class="label">Confidence</span><b id="planConfidence">— / 10</b></div><div class="row"><span class="label">Agreement</span><b id="planAgreement">INSUFFICIENT</b></div></div><div class="why-grid" id="planGates"><div class="why-item"><span class="label">System</span><b>Waiting…</b></div></div><div class="rows" style="margin-top:10px"><div class="row"><span class="label">Entry</span><b id="planEntry">—</b></div><div class="row"><span class="label">Stop Loss</span><b id="planStop">—</b></div><div class="row"><span class="label">Target 1</span><b id="planTarget1">—</b></div><div class="row"><span class="label">Target 2</span><b id="planTarget2">—</b></div></div><div class="tip waitbox" id="planGateReason"><b>WAIT:</b> Live plan gates will populate here.</div><div class="age" id="planUpdated">Plan V2: waiting</div></div><div class="tip">ELI5: PASS = confirmed, WAIT = missing confirmation, BLOCK = hard stop. Every critical gate must confirm before an entry is shown.</div></section>'''
         s = s[:start] + section + s[end:]
 
-# Remove any old plan loaders before installing the single V2 loader.
-s = re.sub(r'<script\b[^>]*>.*?/api/plan.*?</script>', '', s, flags=re.S | re.I)
-s = re.sub(r'<script\b[^>]*>.*?loadPlan(?:V1|V2).*?</script>', '', s, flags=re.S | re.I)
+# Remove only the old standalone loader whose function name is loadPlan/loadPlanV1.
+for fn in ('loadPlanV1', 'loadPlan'):
+    while True:
+        pos = s.find('function ' + fn)
+        if pos < 0:
+            break
+        script_start = s.rfind('<script', 0, pos)
+        script_end = s.find('</script>', pos)
+        if script_start >= 0 and script_end >= 0:
+            s = s[:script_start] + s[script_end + len('</script>'):]
+        else:
+            break
 
-# Install the loader only when it is not already present.
+# Install the V2 loader exactly once.
 if 'async function loadPlanV2()' not in s:
     loader = r'''<script>
 async function loadPlanV2(){
