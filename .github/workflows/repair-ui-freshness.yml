@@ -13,53 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Repair dashboard and exchange freshness
+      - name: Upgrade Trade Plan V2 UI
+        run: python scripts/upgrade_plan_ui.py
+      - name: Normalize Upstox timestamps
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
-
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-
-          # Remove repeated agreement sentence.
-          repeated = ('One directional signal is not enough to claim agreement. ' * 3).strip()
-          s = s.replace(repeated, 'One directional signal is not enough to claim agreement.')
-          s = s.replace(
-              'One directional signal is not enough to claim agreement. One directional signal is not enough to claim agreement.',
-              'One directional signal is not enough to claim agreement.'
-          )
-
-          # Replace the Trade Plan card with the V2 gate matrix.
-          marker = '<section class="section"><h2>🎯 Sniper Trade Plan V1</h2>'
-          start = s.find(marker)
-          if start >= 0:
-              end = s.find('<section class="section">', start + len(marker))
-              if end < 0: end = s.find('<footer', start)
-              if end > start:
-                  section = '''<section class="section"><h2>🎯 Sniper Trade Plan V2</h2><div class="verdict"><div class="label">MULTI-GATE EXECUTION PLAN</div><div class="big yellow" id="planDecision">NO TRADE</div><div class="label" id="planReason">Waiting for confirmation</div><div class="rows"><div class="row"><span class="label">Confidence</span><b id="planConfidence">— / 10</b></div><div class="row"><span class="label">Agreement</span><b id="planAgreement">INSUFFICIENT</b></div></div><div class="why-grid" id="planGates"><div class="why-item"><span class="label">System</span><b>Waiting…</b></div></div><div class="rows" style="margin-top:10px"><div class="row"><span class="label">Entry</span><b id="planEntry">—</b></div><div class="row"><span class="label">Stop Loss</span><b id="planStop">—</b></div><div class="row"><span class="label">Target 1</span><b id="planTarget1">—</b></div><div class="row"><span class="label">Target 2</span><b id="planTarget2">—</b></div></div><div class="tip waitbox" id="planGateReason"><b>WAIT:</b> Live plan gates will populate here.</div><div class="age" id="planUpdated">Plan V2: waiting</div></div><div class="tip">ELI5: every critical gate must confirm before an entry is shown. PASS = confirmed, WAIT = missing confirmation, BLOCK = hard stop. One signal alone can never create a trade.</div></section>'''
-                  s = s[:start] + section + s[end:]
-
-          # Remove old plan loaders so only V2 drives the card.
-          s = re.sub(r'<script\\b[^>]*>.*?/api/plan.*?</script>', '', s, flags=re.S|re.I)
-          s = re.sub(r'<script\\b[^>]*>.*?loadPlan(?:V1|V2).*?</script>', '', s, flags=re.S|re.I)
-
-          # Add one controlled V2 loader before </body>.
-          loader = '''<script>async function loadPlanV2(){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};const esc=v=>String(v==null?'—':v).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));try{const r=await fetch('/api/plan?ts='+Date.now(),{cache:'no-store'});const d=await r.json();if(!d.ok)throw Error(d.reason||'Plan unavailable');set('planDecision',d.decision||'NO TRADE');set('planConfidence',(d.confidence??'—')+' / 10');set('planAgreement',d.agreement==null?'INSUFFICIENT':d.agreement+'%');set('planReason',d.reason||'NO TRADE');set('planEntry',d.plan?.entry??'—');set('planStop',d.plan?.stoploss??'—');set('planTarget1',d.plan?.target1??'—');set('planTarget2',d.plan?.target2??'—');const names={market_open:'Market Open',freshness:'Fresh Data',index_alignment:'NIFTY + SENSEX',structure:'BOS / CHoCH',liquidity:'Liquidity',smc_retest:'Retest',orderflow:'Options Flow',forecast:'Forecast',news_risk:'News Risk'};const html=Object.entries(d.gates||{}).map(([k,g])=>'<div class="why-item '+(g.status==='PASS'?'okbox':g.status==='BLOCK'?'dangerbox':'waitbox')+'"><span class="label">'+esc(names[k]||k)+'</span><b>'+esc(g.status)+'</b><span class="label">'+esc(g.reason)+'</span></div>').join('');const box=document.getElementById('planGates');if(box)box.innerHTML=html||'<div class="why-item"><b>Waiting…</b></div>';const waiting=(d.gates_summary?.waiting||[]).length,blocked=(d.gates_summary?.blocked||[]).length;set('planGateReason',blocked?'BLOCK: '+(d.gates_summary.blocked||[]).join(', '):waiting?'WAIT: '+(d.gates_summary.waiting||[]).join(', '):'PASS: all critical gates confirmed.');set('planUpdated','Updated '+new Date().toLocaleTimeString()+' • Sniper Plan V2')}catch(e){set('planDecision','NO TRADE');set('planReason','Plan engine unavailable — conservative fallback.');set('planUpdated','Plan V2: unavailable')}}loadPlanV2();setInterval(loadPlanV2,30000);</script>'''
-          s = s.replace('</body>', loader + '</body>')
-          p.write_text(s, encoding='utf-8')
-          PY
-
-          # Normalize Upstox timestamps robustly (seconds/ms/us/ns and ISO strings).
-          p = Path('api/live.js')
-          s = p.read_text(encoding='utf-8')
-          old_quote = "function quote(q){if(!q)return null;const last=Number(q.last_price),ch=q.net_change==null?null:Number(q.net_change),prev=q.prev_close_price==null?Number(q.ohlc?.close):Number(q.prev_close_price);return{last_price:Number.isFinite(last)?last:null,change:Number.isFinite(ch)?ch:null,change_pct:Number.isFinite(prev)&&prev?ch/prev*100:null,timestamp:q.timestamp||null,last_trade_time:q.last_trade_time?new Date(Number(q.last_trade_time)).toISOString():null,volume:q.volume==null?null:Number(q.volume)}}"
-          new_quote = "function timeMs(v){if(v==null)return null;if(typeof v==='string'){const parsed=Date.parse(v);if(Number.isFinite(parsed))return parsed;v=Number(v)}else v=Number(v);if(!Number.isFinite(v))return null;if(v>1e17)v/=1e6;else if(v>1e14)v/=1e3;else if(v<1e11)v*=1e3;const d=new Date(v);return Number.isFinite(d.getTime())?d.getTime():null}function isoTime(v){const m=timeMs(v);return m==null?null:new Date(m).toISOString()}function quote(q){if(!q)return null;const last=Number(q.last_price),ch=q.net_change==null?null:Number(q.net_change),prev=q.prev_close_price==null?Number(q.ohlc?.close):Number(q.prev_close_price);return{last_price:Number.isFinite(last)?last:null,change:Number.isFinite(ch)?ch:null,change_pct:Number.isFinite(prev)&&prev?ch/prev*100:null,timestamp:q.timestamp||null,last_trade_time:isoTime(q.last_trade_time),volume:q.volume==null?null:Number(q.volume)}}"
+          p=Path('api/live.js')
+          s=p.read_text(encoding='utf-8')
+          old_quote="function quote(q){if(!q)return null;const last=Number(q.last_price),ch=q.net_change==null?null:Number(q.net_change),prev=q.prev_close_price==null?Number(q.ohlc?.close):Number(q.prev_close_price);return{last_price:Number.isFinite(last)?last:null,change:Number.isFinite(ch)?ch:null,change_pct:Number.isFinite(prev)&&prev?ch/prev*100:null,timestamp:q.timestamp||null,last_trade_time:q.last_trade_time?new Date(Number(q.last_trade_time)).toISOString():null,volume:q.volume==null?null:Number(q.volume)}}"
+          new_quote="function timeMs(v){if(v==null)return null;if(typeof v==='string'){const parsed=Date.parse(v);if(Number.isFinite(parsed))return parsed;v=Number(v)}else v=Number(v);if(!Number.isFinite(v))return null;if(v>1e17)v/=1e6;else if(v>1e14)v/=1e3;else if(v<1e11)v*=1e3;const d=new Date(v);return Number.isFinite(d.getTime())?d.getTime():null}function isoTime(v){const m=timeMs(v);return m==null?null:new Date(m).toISOString()}function quote(q){if(!q)return null;const last=Number(q.last_price),ch=q.net_change==null?null:Number(q.net_change),prev=q.prev_close_price==null?Number(q.ohlc?.close):Number(q.prev_close_price);return{last_price:Number.isFinite(last)?last:null,change:Number.isFinite(ch)?ch:null,change_pct:Number.isFinite(prev)&&prev?ch/prev*100:null,timestamp:q.timestamp||null,last_trade_time:isoTime(q.last_trade_time),volume:q.volume==null?null:Number(q.volume)}}"
           if old_quote in s: s=s.replace(old_quote,new_quote,1)
-
-          old_market = "async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const nq=quote(n),sq=quote(s),vq=quote(v),gq=quote(g);const ts=[nq?.last_trade_time,sq?.last_trade_time,vq?.last_trade_time,nq?.timestamp,sq?.timestamp,vq?.timestamp].filter(Boolean).map(x=>new Date(x).getTime()).filter(Number.isFinite);return{nifty:nq,sensex:sq,vix:vq,gift_nifty:gq,provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
-          new_market = "async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const nq=quote(n),sq=quote(s),vq=quote(v),gq=quote(g);const ts=[nq?.last_trade_time,sq?.last_trade_time,nq?.timestamp,sq?.timestamp].map(timeMs).filter(Number.isFinite);return{nifty:nq,sensex:sq,vix:vq,gift_nifty:gq,provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
+          old_market="async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const nq=quote(n),sq=quote(s),vq=quote(v),gq=quote(g);const ts=[nq?.last_trade_time,sq?.last_trade_time,vq?.last_trade_time,nq?.timestamp,sq?.timestamp,vq?.timestamp].filter(Boolean).map(x=>new Date(x).getTime()).filter(Number.isFinite);return{nifty:nq,sensex:sq,vix:vq,gift_nifty:gq,provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
+          new_market="async function market(){const d=await api(V3,'/market-quote/quotes',{instrument_key:[IDS.NIFTY,IDS.SENSEX,IDS.VIX,IDS.GIFT].join(',')});const n=pick(d,IDS.NIFTY),s=pick(d,IDS.SENSEX),v=pick(d,IDS.VIX),g=pick(d,IDS.GIFT);const nq=quote(n),sq=quote(s),vq=quote(v),gq=quote(g);const ts=[nq?.last_trade_time,sq?.last_trade_time,nq?.timestamp,sq?.timestamp].map(timeMs).filter(Number.isFinite);return{nifty:nq,sensex:sq,vix:vq,gift_nifty:gq,provider:'Upstox',data_timestamp:ts.length?new Date(Math.max(...ts)).toISOString():null,fetched_at:new Date().toISOString()}}"
           if old_market in s: s=s.replace(old_market,new_market,1)
           p.write_text(s,encoding='utf-8')
           PY
@@ -67,6 +34,7 @@ jobs:
         run: |
           node --check api/live.js
           node --check api/plan.js
+          python -m py_compile scripts/upgrade_plan_ui.py
           git diff --check
       - name: Commit repair
         run: |
@@ -76,6 +44,6 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add index.html api/live.js
-            git commit -m "Upgrade trade plan to V2 gate matrix"
+            git commit -m "Apply Trade Plan V2 UI and freshness repair"
             git push
           fi
