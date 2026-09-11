@@ -18,11 +18,9 @@ css = r'''
   .os-plan{gap:4px;margin-top:5px}.os-plan div{padding:5px;border-radius:7px}.os-plan span{font-size:7px}.os-plan b{font-size:11px}
   .os-reason{margin-top:5px;padding:5px 7px;border-radius:7px;font-size:8px;line-height:1.2}
   .more-details{display:block;width:100%;margin-top:5px;padding:7px 9px;border:1px solid #315a87;border-radius:8px;background:#fff;color:#0b2a52;font-weight:900;font-size:9px;text-align:center}
-  /* Main cockpit contains only decision-critical information. */
-  .verdict>.status,.verdict>.age,.verdict>.button{display:none!important}
-  /* Secondary long-form sections stay hidden until More Details is tapped. */
-  .app>.section:nth-of-type(n+4){display:none!important}
   .app.details-open>.section:nth-of-type(n+4){display:block!important}
+  .verdict>.status,.verdict>.age,.verdict>.button{display:none!important}
+  .app>.section:nth-of-type(n+4){display:none!important}
   .nav{height:52px}.nav b{font-size:14px}.nav span{font-size:7px}
 }
 '''
@@ -31,6 +29,7 @@ if 'SNIPER TRUE ONE-SCREEN COCKPIT' not in s:
     s = s.replace('</style>', css + '\n</style>', 1)
 
 needle = '<div class="status" id="status">'
+button = '<button class="more-details" id="moreDetailsBtn" type="button">▾ MORE DETAILS</button>'
 if 'id="oneScreenDetails"' not in s:
     insert = '''<div class="one-screen-details" id="oneScreenDetails">
 <div class="os-grid">
@@ -47,9 +46,11 @@ if 'id="oneScreenDetails"' not in s:
 <div><span>TARGET</span><b id="osTarget">—</b></div>
 </div>
 <div class="os-reason" id="osReason">🛡️ Waiting for live confirmation.</div>
-<button class="more-details" id="moreDetailsBtn" type="button">▾ MORE DETAILS</button>
-</div>'''
+''' + button + '\n</div>'
     s = s.replace(needle, insert + '\n' + needle, 1)
+elif 'id="moreDetailsBtn"' not in s:
+    marker = '<div class="os-reason" id="osReason">🛡️ Waiting for live confirmation.</div>'
+    s = s.replace(marker, marker + '\n' + button, 1)
 
 if 'function loadOneScreen()' not in s:
     script = r'''<script>
