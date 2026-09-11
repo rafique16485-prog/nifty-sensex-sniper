@@ -52,6 +52,48 @@ elif 'id="moreDetailsBtn"' not in s:
     marker = '<div class="os-reason" id="osReason">🛡️ Waiting for live confirmation.</div>'
     s = s.replace(marker, marker + '\n' + button, 1)
 
+# Professional mobile cockpit layer: overrides the older visual layer without touching API logic.
+pro_marker = '/* SNIPER PRO MOBILE COCKPIT V1 */'
+pro_css = r'''
+/* SNIPER PRO MOBILE COCKPIT V1 */
+@media (max-width:600px){
+  html,body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#10213b;-webkit-font-smoothing:antialiased}
+  body{background:#eef3f8!important}
+  .app{background:#f7f9fc!important;max-width:540px!important}
+  .top{background:#071b3a!important;color:#fff!important;padding:10px 12px 9px!important;border-radius:0 0 14px 14px;box-shadow:0 3px 14px rgba(7,27,58,.16)!important}
+  .brand{font-family:Inter,system-ui,sans-serif!important;font-size:17px!important;font-weight:900!important;letter-spacing:-.25px}
+  .sub{color:#b9c9dc!important;font-size:8px!important}
+  .pill{background:#12345e!important;border:1px solid rgba(255,255,255,.12);font-size:8px!important;padding:4px 7px!important}
+  .pill.live{background:#073e31!important;color:#5ff0ba!important}
+  .grid{padding:7px 7px 4px!important;gap:6px!important}
+  .card{border:1px solid #d8e2ed!important;border-radius:11px!important;padding:8px!important;box-shadow:0 3px 10px rgba(16,33,59,.05)!important}
+  .label{font-size:8px!important;color:#728198!important;letter-spacing:.25px}
+  .value{font-size:17px!important;font-weight:900!important;color:#10213b!important}
+  .section{padding:2px 7px!important}
+  .section h2{font-family:Inter,system-ui,sans-serif!important;font-size:12px!important;font-weight:850!important;color:#10213b!important;letter-spacing:-.1px}
+  .cue{background:#fff!important;border:1px solid #dce5ef!important;border-radius:9px!important;padding:6px 7px!important;box-shadow:0 2px 8px rgba(16,33,59,.035)}
+  .cue b{font-size:10px!important;color:#10213b}
+  .verdict{background:#fff!important;border:1px solid #cbdbea!important;border-left:4px solid #0b2a52!important;border-radius:12px!important;padding:9px!important;box-shadow:0 4px 14px rgba(16,33,59,.07)!important}
+  .verdict .big{font-size:25px!important;font-weight:950!important;letter-spacing:-.4px}
+  .verdict .score{height:6px!important;background:#e4ebf2!important;border-radius:8px!important}
+  .verdict .rows{grid-template-columns:1fr 1fr!important;gap:5px!important}
+  .verdict .row{background:#f7f9fc!important;border:1px solid #e1e8ef!important;border-radius:8px!important;padding:6px!important}
+  .verdict .row b{font-size:11px!important}
+  .one-screen-details{margin-top:5px!important}
+  .os-chip{background:#f6f9fc!important;border:1px solid #dbe4ed!important;border-radius:7px!important;padding:5px 3px!important}
+  .os-chip span,.os-plan span{color:#7a899b!important;font-size:7px!important;font-weight:800;letter-spacing:.25px}
+  .os-chip b,.os-plan b{color:#10213b!important;font-size:10px!important;font-weight:900!important}
+  .os-plan div{background:#fff!important;border:1px solid #dbe4ed!important;border-radius:7px!important;padding:5px!important}
+  .os-reason{background:#f7f9fc!important;border:1px solid #dbe4ed!important;border-left:3px solid #bd8610!important;border-radius:7px!important;color:#40536b!important}
+  .more-details{background:#071b3a!important;color:#fff!important;border-color:#071b3a!important;border-radius:8px!important;font-size:9px!important;padding:7px!important;box-shadow:0 2px 7px rgba(7,27,58,.18)}
+  .more-details:active{transform:scale(.99)}
+  .nav{height:52px!important;background:rgba(255,255,255,.98)!important;border-top:1px solid #dbe4ed!important;box-shadow:0 -4px 16px rgba(16,33,59,.08)!important}
+  .nav b{color:#0b2a52!important;font-size:14px!important}.nav span{font-size:7px!important;color:#73839a!important}.nav .active span,.nav .active b{color:#087dca!important}
+}
+'''
+if pro_marker not in s:
+    s = s.replace('</style>', pro_css + '\n</style>', 1)
+
 # Always ensure the mobile reveal rule exists AFTER the mobile hide rule.
 reveal_marker = '/* MORE DETAILS REVEAL FIX */'
 reveal_css = '''
@@ -63,8 +105,7 @@ reveal_css = '''
 if reveal_marker not in s:
     s = s.replace('</style>', reveal_css + '\n</style>', 1)
 
-# Always ensure the click handler exists. Older versions could already contain
-# loadOneScreen(), which prevented the previous idempotent block from adding it.
+# Always ensure the click handler exists.
 handler_marker = '/* MORE DETAILS CLICK FIX */'
 handler = r'''<script>
 /* MORE DETAILS CLICK FIX */
@@ -95,4 +136,4 @@ if handler_marker not in s:
 
 s = '\n'.join(line.rstrip() for line in s.splitlines()) + '\n'
 p.write_text(s, encoding='utf-8')
-print('More Details click + reveal fix applied')
+print('Professional mobile cockpit layer applied')
