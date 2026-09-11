@@ -31,14 +31,18 @@ if match:
         section = '''<section class="section"><h2>🎯 Sniper Trade Plan V2</h2><div class="verdict"><div class="label">MULTI-GATE EXECUTION PLAN</div><div class="big yellow" id="planDecision">NO TRADE</div><div class="label" id="planReason">Waiting for confirmation</div><div class="rows"><div class="row"><span class="label">Confidence</span><b id="planConfidence">— / 10</b></div><div class="row"><span class="label">Agreement</span><b id="planAgreement">INSUFFICIENT</b></div></div><div class="why-grid" id="planGates"><div class="why-item"><span class="label">System</span><b>Waiting…</b></div></div><div class="rows" style="margin-top:10px"><div class="row"><span class="label">Entry</span><b id="planEntry">—</b></div><div class="row"><span class="label">Stop Loss</span><b id="planStop">—</b></div><div class="row"><span class="label">Target 1</span><b id="planTarget1">—</b></div><div class="row"><span class="label">Target 2</span><b id="planTarget2">—</b></div></div><div class="tip waitbox" id="planGateReason"><b>WAIT:</b> Live plan gates will populate here.</div><div class="age" id="planUpdated">Plan V2: waiting</div></div><div class="tip">ELI5: PASS = confirmed, WAIT = missing confirmation, BLOCK = hard stop. Every critical gate must confirm before an entry is shown.</div></section>'''
         s = s[:start] + section + s[end:]
 
-# Remove every legacy plan loader script. The old V1 loader is named loadSniperPlanV1.
+# Remove every legacy plan loader script, including IIFEs such as
+# (async function loadSniperPlanV1(){ ... })();
 for fn in ('loadSniperPlanV1', 'loadPlanV1', 'loadPlan'):
     while True:
-        pos = s.find('function ' + fn)
-        if pos < 0:
+        m = re.search(r'(?:async\s+)?function\s+' + re.escape(fn) + r'\s*\(', s)
+        if not m:
+            # Also catch an IIFE whose function name is preceded by "async function".
+            m = re.search(r'async\s*\(function\s+' + re.escape(fn) + r'\s*\(', s)
+        if not m:
             break
-        script_start = s.rfind('<script', 0, pos)
-        script_end = s.find('</script>', pos)
+        script_start = s.rfind('<script', 0, m.start())
+        script_end = s.find('</script>', m.end())
         if script_start >= 0 and script_end >= 0:
             s = s[:script_start] + s[script_end + len('</script>'):]
         else:
@@ -51,7 +55,7 @@ async function loadPlanV2(){
  const esc=v=>String(v==null?'—':v).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
  try{
   const r=await fetch('/api/plan?ts='+Date.now(),{cache:'no-store'}); const d=await r.json();
-  if(!d.ok) throw Error(d.reason||'Plan unavailable');
+  if(!d.ok) throw Error(d.error||d.reason||'Plan unavailable');
   set('planDecision',d.decision||'NO TRADE'); set('planConfidence',(d.confidence??'—')+' / 10');
   set('planAgreement',d.agreement==null?'INSUFFICIENT':d.agreement+'%'); set('planReason',d.reason||'NO TRADE');
   set('planEntry',d.plan?.entry??'—'); set('planStop',d.plan?.stoploss??'—'); set('planTarget1',d.plan?.target1??'—'); set('planTarget2',d.plan?.target2??'—');
