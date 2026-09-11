@@ -3,6 +3,7 @@ import re
 
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
+original = s
 
 # Remove repeated confidence sentence.
 s = s.replace(
@@ -14,7 +15,7 @@ s = s.replace(
     'One directional signal is not enough to claim agreement.'
 )
 
-# Replace the old V1 card with a compact V2 gate matrix.
+# Replace the old V1 card only if it is still present.
 marker = '<section class="section"><h2>🎯 Sniper Trade Plan V1</h2>'
 start = s.find(marker)
 if start >= 0:
@@ -25,11 +26,13 @@ if start >= 0:
         section = '''<section class="section"><h2>🎯 Sniper Trade Plan V2</h2><div class="verdict"><div class="label">MULTI-GATE EXECUTION PLAN</div><div class="big yellow" id="planDecision">NO TRADE</div><div class="label" id="planReason">Waiting for confirmation</div><div class="rows"><div class="row"><span class="label">Confidence</span><b id="planConfidence">— / 10</b></div><div class="row"><span class="label">Agreement</span><b id="planAgreement">INSUFFICIENT</b></div></div><div class="why-grid" id="planGates"><div class="why-item"><span class="label">System</span><b>Waiting…</b></div></div><div class="rows" style="margin-top:10px"><div class="row"><span class="label">Entry</span><b id="planEntry">—</b></div><div class="row"><span class="label">Stop Loss</span><b id="planStop">—</b></div><div class="row"><span class="label">Target 1</span><b id="planTarget1">—</b></div><div class="row"><span class="label">Target 2</span><b id="planTarget2">—</b></div></div><div class="tip waitbox" id="planGateReason"><b>WAIT:</b> Live plan gates will populate here.</div><div class="age" id="planUpdated">Plan V2: waiting</div></div><div class="tip">ELI5: PASS = confirmed, WAIT = missing confirmation, BLOCK = hard stop. Every critical gate must confirm before an entry is shown.</div></section>'''
         s = s[:start] + section + s[end:]
 
-# Remove old plan loader blocks; the V2 loader below is the only owner of the new card.
+# Remove any old plan loaders before installing the single V2 loader.
 s = re.sub(r'<script\b[^>]*>.*?/api/plan.*?</script>', '', s, flags=re.S | re.I)
 s = re.sub(r'<script\b[^>]*>.*?loadPlan(?:V1|V2).*?</script>', '', s, flags=re.S | re.I)
 
-loader = r'''<script>
+# Install the loader only when it is not already present.
+if 'async function loadPlanV2()' not in s:
+    loader = r'''<script>
 async function loadPlanV2(){
  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
  const esc=v=>String(v==null?'—':v).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -49,5 +52,6 @@ async function loadPlanV2(){
 }
 loadPlanV2(); setInterval(loadPlanV2,30000);
 </script>'''
-s = s.replace('</body>', loader + '</body>')
+    s = s.replace('</body>', loader + '</body>')
+
 p.write_text(s, encoding='utf-8')
