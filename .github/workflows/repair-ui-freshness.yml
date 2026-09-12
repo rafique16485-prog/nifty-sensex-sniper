@@ -1,64 +1,17 @@
 name: Repair UI and Freshness
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  repair:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Restore dashboard if JS was damaged
-        shell: bash
-        run: |
-          if ! grep -q "function refreshAll" index.html; then
-            echo "Core dashboard JS missing; restoring last known-good index.html"
-            curl -fsSL "https://raw.githubusercontent.com/rafique16485-prog/nifty-sensex-sniper/2ddf2fa4186f6d27ce76d3cb2d508c639fa582ac/index.html" -o index.html
-          fi
-      - name: Upgrade Trade Plan V2 UI
-        run: python scripts/upgrade_plan_ui.py
-      - name: Apply compact one-screen dashboard
-        run: python scripts/compact_one_screen.py
-      - name: Apply functional bottom navigation
-        run: python scripts/functional_nav.py
-      - name: Apply Swing Scanner UI
-        run: python scripts/swing_ui.py
-      - name: Apply Risk Management Engine
-        run: python scripts/risk_management.py
-      - name: Apply News Event and Smart Money panels
-        run: python scripts/intelligence_panels.py
-      - name: Apply mobile readability and stock search
-        run: python scripts/mobile_readability_accessibility.py
-      - name: Normalize Upstox timestamps
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('api/live.js')
-          s=p.read_text(encoding='utf-8')
-          old_quote="function quote(q){if(!q)return null;const last=Number(q.last_price),ch=q.net_change==null?null:Number(q.net_change),prev=q.prev_close_price==null?Number(q.ohlc?.close):Number(q.prev_close_price);return{last_price:Number.isFinite(last)?last:null,change:Number.isFinite(ch)?ch:null,change_pct:Number.isFinite(prev)&&prev?ch/prev*100:null,timestamp:q.timestamp||null,last_trade_time:q.last_trade_time?new Date(Number(q.last_trade_time)).toISOString():null,volume:q.volume==null?null:Number(q.volume)}}"
-          new_quote="function timeMs(v){if(v==null)return null;if(typeof v==='string'){const parsed=Date.parse(v);if(Number.isFinite(parsed))return parsed;v=Number(v)}else v=Number(v);if(!Number.isFinite(v))return null;if(v>1e17)v/=1e6;else if(v>1e14)v/=1e3;else if(v<1e11)v*=1e3;const d=new Date(v);return Number.isFinite(d.getTime())?d.getTime():null}function isoTime(v){const m=timeMs(v);return m==null?null:new Date(m).toISOString()}function quote(q){if(!q)return null;const last=Number(q.last_price),ch=q.net_change==null?null:Number(q.net_change),prev=q.prev_close_price==null?Number(q.ohlc?.close):Number(q.prev_close_price);return{last_price:Number.isFinite(last)?last:null,change:Number.isFinite(ch)?ch:null,change_pct:Number.isFinite(prev)&&prev?ch/prev*100:null,timestamp:q.timestamp||null,last_trade_time:isoTime(q.last_trade_time),volume:q.volume==null?null:Number(q.volume)}}"
-          if old_quote in s: s=s.replace(old_quote,new_quote,1)
-          p.write_text(s,encoding='utf-8')
-          PY
-      - name: Harden Trade Plan dependencies
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('api/plan.js')
-          s=p.read_text(encoding='utf-8')
-          old="async function getJson(base,req){const u=new URL(base,`https://${req.headers.host}`);u.searchParams.set('ts',Date.now());const r=await fetch(u,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error(`${base} HTTP ${r.status}`);return r.json()}"
-          new="async function getJson(base,req){try{const host=req.headers.host||req.headers.Host;if(!host)throw Error('request host unavailable');const u=new URL(base,`https://${host}`);u.searchParams.set('ts',Date.now());const r=await fetch(u,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error(`${base} HTTP ${r.status}`);return await r.json()}catch(e){return{ok:false,error:String(e.message||e)}}}"
-          if old in s: s=s.replace(old,new,1)
-          p.write_text(s,encoding='utf-8')
-          PY
-      - name: Validate
+      - name: Validate APIs and scripts
         run: |
           node --check api/live.js
           node --check api/plan.js
@@ -66,16 +19,5 @@ jobs:
           node --check api/events.js
           node --check api/smart-money.js
           node --check api/stock-analysis.js
-          python -m py_compile scripts/upgrade_plan_ui.py scripts/compact_one_screen.py scripts/functional_nav.py scripts/swing_ui.py scripts/risk_management.py scripts/intelligence_panels.py scripts/mobile_readability_accessibility.py
+          python -m py_compile scripts/*.py
           git diff --check
-      - name: Commit repair
-        run: |
-          if git diff --quiet; then
-            echo "No repair needed"
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add index.html api/live.js api/plan.js api/swing.js api/events.js api/smart-money.js api/stock-analysis.js scripts/upgrade_plan_ui.py scripts/compact_one_screen.py scripts/functional_nav.py scripts/swing_ui.py scripts/risk_management.py scripts/intelligence_panels.py scripts/mobile_readability_accessibility.py .github/workflows/repair-ui-freshness.yml .github/workflows/compact-one-screen.yml .github/workflows/fix-mobile-search.yml
-            git commit -m "Improve mobile readability and stock search"
-            git push
-          fi
