@@ -1,42 +1,11 @@
 name: Compact One Screen Dashboard
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/compact_one_screen.py'
-      - 'index.html'
-      - '.github/workflows/compact-one-screen.yml'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  compact:
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Apply compact dashboard
-        run: python scripts/compact_one_screen.py
-      - name: Validate HTML script blocks
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          s=Path('index.html').read_text(encoding='utf-8')
-          assert 'SNIPER ONE-SCREEN MODE' in s
-          assert 'id="oneScreenDetails"' in s
-          assert 'function loadOneScreen()' in s
-          print('one-screen checks passed')
-          PY
-          git diff --check
-      - name: Commit compact dashboard
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html
-          if git diff --cached --quiet; then
-            echo 'No compact dashboard changes needed'
-          else
-            git commit -m 'Apply compact one-screen dashboard'
-            git push
-          fi
-      # Keeps the compact mobile cockpit idempotent across future dashboard repairs.
+      - uses: actions/checkout@v4
+      - run: python -m py_compile scripts/compact_one_screen.py
