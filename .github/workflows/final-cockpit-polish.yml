@@ -1,0 +1,41 @@
+name: Final Cockpit Polish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/final_cockpit_polish.py'
+      - '.github/workflows/final-cockpit-polish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply final cockpit polish
+        run: python scripts/final_cockpit_polish.py
+      - name: Validate
+        run: |
+          python -m py_compile scripts/final_cockpit_polish.py
+          node --check api/live.js
+          node --check api/stock-analysis.js
+          node --check api/swing.js
+          git diff --check
+          grep -q 'id="final-cockpit-css"' index.html
+          grep -q 'id="final-cockpit-js"' index.html
+      - name: Commit generated UI
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No UI changes needed'
+          else
+            git commit -m 'Apply final working cockpit UI'
+            git push
+          fi
