@@ -1,0 +1,25 @@
+name: Fix Mobile Readability and Stock Search
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply mobile readability and stock search
+        run: python scripts/mobile_readability_accessibility.py
+      - name: Validate APIs and scripts
+        run: |
+          node --check api/stock-analysis.js
+          python -m py_compile scripts/mobile_readability_accessibility.py
+          git diff --check
+      - name: Commit generated UI
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then echo "No UI changes needed"; else git commit -m "Improve mobile readability and stock search"; git push; fi
