@@ -32,6 +32,8 @@ jobs:
         run: python scripts/risk_management.py
       - name: Apply News Event and Smart Money panels
         run: python scripts/intelligence_panels.py
+      - name: Apply mobile readability and stock search
+        run: python scripts/mobile_readability_accessibility.py
       - name: Normalize Upstox timestamps
         shell: bash
         run: |
@@ -63,7 +65,8 @@ jobs:
           node --check api/swing.js
           node --check api/events.js
           node --check api/smart-money.js
-          python -m py_compile scripts/upgrade_plan_ui.py scripts/compact_one_screen.py scripts/functional_nav.py scripts/swing_ui.py scripts/risk_management.py scripts/intelligence_panels.py
+          node --check api/stock-analysis.js
+          python -m py_compile scripts/upgrade_plan_ui.py scripts/compact_one_screen.py scripts/functional_nav.py scripts/swing_ui.py scripts/risk_management.py scripts/intelligence_panels.py scripts/mobile_readability_accessibility.py
           git diff --check
       - name: Commit repair
         run: |
@@ -72,7 +75,7 @@ jobs:
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add index.html api/live.js api/plan.js api/swing.js api/events.js api/smart-money.js scripts/upgrade_plan_ui.py scripts/compact_one_screen.py scripts/functional_nav.py scripts/swing_ui.py scripts/risk_management.py scripts/intelligence_panels.py .github/workflows/repair-ui-freshness.yml .github/workflows/compact-one-screen.yml
-            git commit -m "Finalize market intelligence and swing scanner"
+            git add index.html api/live.js api/plan.js api/swing.js api/events.js api/smart-money.js api/stock-analysis.js scripts/upgrade_plan_ui.py scripts/compact_one_screen.py scripts/functional_nav.py scripts/swing_ui.py scripts/risk_management.py scripts/intelligence_panels.py scripts/mobile_readability_accessibility.py .github/workflows/repair-ui-freshness.yml .github/workflows/compact-one-screen.yml .github/workflows/fix-mobile-search.yml
+            git commit -m "Improve mobile readability and stock search"
             git push
           fi
