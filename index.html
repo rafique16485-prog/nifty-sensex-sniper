@@ -18,8 +18,72 @@
 #stockResult{display:none}.result{padding:11px 12px}.result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:8px}.rchip{background:#f5f8fb;border:1px solid #e0e7ef;border-radius:9px;padding:8px;font-size:10px}.rchip b{display:block;font-size:13px;margin-top:2px}.error{color:#c3314a;background:#fff4f5;padding:9px;border-radius:9px;font-size:11px}.more{margin:3px 10px 12px;width:calc(100% - 20px);height:42px;border:0;border-radius:12px;background:#071b3a;color:#fff;font-size:12px;font-weight:900;cursor:pointer}.extra{display:none}.extra.open{display:block}
 .bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(680px,100%);height:67px;background:#fff;border-top:1px solid #d7e0e9;display:grid;grid-template-columns:repeat(5,1fr);z-index:50;box-shadow:0 -5px 18px #10213b15}.navbtn{border:0;background:transparent;color:#6d7d90;font-weight:800;font-size:10px;cursor:pointer}.navbtn b{display:block;font-size:23px;margin-bottom:2px}.navbtn.active{color:#126bd6}.modal{position:fixed;inset:0;background:#071b3a66;z-index:80;display:none;align-items:flex-end}.modal.open{display:flex}.sheet{width:min(680px,100%);margin:auto;background:#fff;border-radius:20px 20px 0 0;padding:16px;max-height:78vh;overflow:auto}.sheet h3{margin:0 0 8px}.sheet p{font-size:12px;color:#586a80;line-height:1.5}.close{width:100%;height:42px;border:1px solid #dbe4ed;border-radius:11px;background:#f3f7fb;font-weight:900}
 @media(max-width:560px){.app{max-width:100%}.header{padding:12px 12px 11px}.brand{font-size:21px}.sub{font-size:10px}.grid{gap:6px;padding:8px 7px 4px}.card{padding:9px 8px;min-height:103px}.label{font-size:10px}.value{font-size:21px}.chg{font-size:13px}.muted{font-size:9px}.search{grid-template-columns:minmax(0,1fr) 122px;padding-left:8px;padding-right:8px}.search input,.search button{height:46px}.chips{padding-left:8px;padding-right:8px}.section{padding-left:8px;padding-right:8px}.tabs{padding-left:8px;padding-right:8px}.panel{margin-left:8px;margin-right:8px}.swing{min-width:160px}.bottom{height:63px}.navbtn b{font-size:21px}}
-</style>
-</head>
+
+/* SNIPER TRUE ONE-SCREEN COCKPIT */
+@media (max-width:600px){
+  body{background:#eef3f8;overflow-x:hidden}
+  .app{max-width:540px;min-height:100vh;padding-bottom:58px}
+  .top{padding:7px 12px 6px}.brand{font-size:17px;line-height:1.05}.sub{font-size:8px;margin-top:2px}.pill{padding:4px 7px;margin-top:4px;font-size:9px}
+  .grid{padding:6px;gap:5px}.card{border-radius:11px;padding:7px}.label{font-size:8px}.value{font-size:16px;margin-top:1px;line-height:1.05}
+  .section{padding:1px 7px}.section h2{font-size:12px;margin:5px 2px 4px}
+  .cues{gap:5px}.cue{padding:6px;border-radius:9px}.cue b{margin-top:2px;font-size:11px}
+  .verdict{padding:8px;border-radius:12px}.big{font-size:25px;line-height:1}.score{margin:5px 0;height:5px}.rows{gap:5px}.row{padding:6px;border-radius:8px}.row b{font-size:12px}
+  .one-screen-details{margin-top:5px!important;display:block!important}
+  .os-grid{gap:4px}.os-chip{padding:5px 3px;border-radius:7px;font-size:8px;line-height:1.05}.os-chip b{font-size:10px;margin-top:1px}
+  .os-plan{gap:4px;margin-top:5px}.os-plan div{padding:5px;border-radius:7px}.os-plan span{font-size:7px}.os-plan b{font-size:11px}
+  .os-reason{margin-top:5px;padding:5px 7px;border-radius:7px;font-size:8px;line-height:1.2}
+  .more-details{display:block;width:100%;margin-top:5px;padding:7px 9px;border:1px solid #315a87;border-radius:8px;background:#fff;color:#0b2a52;font-weight:900;font-size:9px;text-align:center;cursor:pointer;touch-action:manipulation}
+  .app>.section:nth-of-type(n+4){display:none!important}
+  .app.details-open>.section:nth-of-type(n+4){display:block!important}
+  .verdict>.status,.verdict>.age,.verdict>.button{display:none!important}
+  .nav{height:52px}.nav b{font-size:14px}.nav span{font-size:7px}
+}
+
+
+/* SNIPER PRO MOBILE COCKPIT V1 */
+@media (max-width:600px){
+  html,body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#10213b;-webkit-font-smoothing:antialiased}
+  body{background:#eef3f8!important}
+  .app{background:#f7f9fc!important;max-width:540px!important}
+  .top{background:#071b3a!important;color:#fff!important;padding:10px 12px 9px!important;border-radius:0 0 14px 14px;box-shadow:0 3px 14px rgba(7,27,58,.16)!important}
+  .brand{font-family:Inter,system-ui,sans-serif!important;font-size:17px!important;font-weight:900!important;letter-spacing:-.25px}
+  .sub{color:#b9c9dc!important;font-size:8px!important}
+  .pill{background:#12345e!important;border:1px solid rgba(255,255,255,.12);font-size:8px!important;padding:4px 7px!important}
+  .pill.live{background:#073e31!important;color:#5ff0ba!important}
+  .grid{padding:7px 7px 4px!important;gap:6px!important}
+  .card{border:1px solid #d8e2ed!important;border-radius:11px!important;padding:8px!important;box-shadow:0 3px 10px rgba(16,33,59,.05)!important}
+  .label{font-size:8px!important;color:#728198!important;letter-spacing:.25px}
+  .value{font-size:17px!important;font-weight:900!important;color:#10213b!important}
+  .section{padding:2px 7px!important}
+  .section h2{font-family:Inter,system-ui,sans-serif!important;font-size:12px!important;font-weight:850!important;color:#10213b!important;letter-spacing:-.1px}
+  .cue{background:#fff!important;border:1px solid #dce5ef!important;border-radius:9px!important;padding:6px 7px!important;box-shadow:0 2px 8px rgba(16,33,59,.035)}
+  .cue b{font-size:10px!important;color:#10213b}
+  .verdict{background:#fff!important;border:1px solid #cbdbea!important;border-left:4px solid #0b2a52!important;border-radius:12px!important;padding:9px!important;box-shadow:0 4px 14px rgba(16,33,59,.07)!important}
+  .verdict .big{font-size:25px!important;font-weight:950!important;letter-spacing:-.4px}
+  .verdict .score{height:6px!important;background:#e4ebf2!important;border-radius:8px!important}
+  .verdict .rows{grid-template-columns:1fr 1fr!important;gap:5px!important}
+  .verdict .row{background:#f7f9fc!important;border:1px solid #e1e8ef!important;border-radius:8px!important;padding:6px!important}
+  .verdict .row b{font-size:11px!important}
+  .one-screen-details{margin-top:5px!important}
+  .os-chip{background:#f6f9fc!important;border:1px solid #dbe4ed!important;border-radius:7px!important;padding:5px 3px!important}
+  .os-chip span,.os-plan span{color:#7a899b!important;font-size:7px!important;font-weight:800;letter-spacing:.25px}
+  .os-chip b,.os-plan b{color:#10213b!important;font-size:10px!important;font-weight:900!important}
+  .os-plan div{background:#fff!important;border:1px solid #dbe4ed!important;border-radius:7px!important;padding:5px!important}
+  .os-reason{background:#f7f9fc!important;border:1px solid #dbe4ed!important;border-left:3px solid #bd8610!important;border-radius:7px!important;color:#40536b!important}
+  .more-details{background:#071b3a!important;color:#fff!important;border-color:#071b3a!important;border-radius:8px!important;font-size:9px!important;padding:7px!important;box-shadow:0 2px 7px rgba(7,27,58,.18)}
+  .more-details:active{transform:scale(.99)}
+  .nav{height:52px!important;background:rgba(255,255,255,.98)!important;border-top:1px solid #dbe4ed!important;box-shadow:0 -4px 16px rgba(16,33,59,.08)!important}
+  .nav b{color:#0b2a52!important;font-size:14px!important}.nav span{font-size:7px!important;color:#73839a!important}.nav .active span,.nav .active b{color:#087dca!important}
+}
+
+
+/* MORE DETAILS REVEAL FIX */
+@media (max-width:600px){
+  .app.details-open > .section:nth-of-type(n+4){display:block!important}
+}
+
+<style id="swingV2Style">.swing-v2{margin-top:8px;padding:10px;border:1px solid #dbe4ed;border-radius:12px;background:#fff}.swing-v2 h3{margin:0 0 7px;font-size:11px}.swing-card{margin-top:8px;padding:10px;border:1px solid #e1e9f1;border-radius:11px;background:#f9fbfd}.swing-top{display:flex;justify-content:space-between;gap:8px;align-items:center}.swing-symbol{font-size:14px;font-weight:950}.swing-action{font-size:9px;font-weight:900;padding:4px 7px;border-radius:999px}.swing-action.buy{color:#07885f;background:#e9fbf4}.swing-action.wait{color:#9b7110;background:#fff8df}.swing-action.avoid{color:#c3314a;background:#fff0f2}.swing-life{display:inline-block;margin-top:5px;padding:3px 6px;border-radius:6px;background:#eaf1f8;color:#0b2a52;font-size:7px;font-weight:900}.swing-meta{font-size:9px;color:#66778d;margin-top:5px;line-height:1.45}.swing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}.swing-k{background:#eef3f8;border-radius:7px;padding:5px}.swing-k small{display:block;font-size:7px;color:#718198}.swing-k b{font-size:9px}.swing-confirm{font-size:8px;color:#52647a;margin-top:7px;line-height:1.35}.swing-actions{display:flex;gap:6px;margin-top:7px}.swing-actions button,.swing-share{flex:1;display:inline-block;text-align:center;padding:7px;border-radius:8px;border:1px solid #d6e1eb;background:#fff;color:#0b2a52;text-decoration:none;font-size:8px;font-weight:850}.swing-actions .wa{background:#087dca;color:#fff;border-color:#087dca}.swing-v2 .buy{color:#079b6a}.swing-v2 .wait{color:#bd8610}.swing-v2 .avoid{color:#d94058}.swing-headmeta{font-size:8px;color:#718198;margin-top:-3px;margin-bottom:5px}@media(max-width:380px){.swing-grid{grid-template-columns:repeat(2,1fr)}}</style></style>
+<style id="functional-nav-css">#sniperNav button{border:0;background:transparent;padding:5px 10px;color:#6e7f94;cursor:pointer;touch-action:manipulation}#sniperNav button b{display:block;font-size:17px;color:#0b2a52;margin-bottom:1px}#sniperNav button.active span,#sniperNav button.active b{color:#087dca}.nav-modal{position:fixed;inset:0;background:#071b3a55;z-index:30;display:none;align-items:flex-end;justify-content:center}.nav-modal.open{display:flex}.nav-sheet{width:min(540px,100%);background:#fff;border-radius:20px 20px 0 0;padding:16px;box-shadow:0 -10px 30px #10213b25}.nav-sheet h3{margin:0 0 8px}.nav-sheet p{font-size:12px;color:#66778d;line-height:1.5}.nav-close{width:100%;padding:11px;border:1px solid #dce5ef;border-radius:12px;background:#f3f7fb;font-weight:800}#swingV2.nav-focus{outline:2px solid #087dca}</style><style id="risk-engine-css">.risk-box{margin-top:8px;padding:9px;border:1px solid #dce5ef;border-radius:10px;background:#f7f9fc}.risk-title{font-size:9px;font-weight:900;color:#10213b}.risk-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.risk-controls label{font-size:8px;color:#718198}.risk-controls input{width:100%;margin-top:2px;padding:7px;border:1px solid #d6e1eb;border-radius:8px;font-size:10px;font-weight:800}.risk-result{margin-top:7px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.risk-k{background:#fff;border-radius:8px;padding:6px}.risk-k small{display:block;font-size:7px;color:#718198}.risk-k b{display:block;font-size:10px;margin-top:2px}.risk-note{font-size:8px;color:#718198;margin-top:6px;line-height:1.35}</style></head>
 <body>
 <div class="app">
 <header class="header"><div class="header-row"><div class="menu">☰</div><div><div class="brand">⚡ NIFTY Sensex Sniper</div><div class="sub">Sniper Engine V8 • SMC • Multi-Factor Confirmation</div></div><div class="bell">🔔<span class="dot"></span></div></div><div class="live-row"><div class="live" id="livePill"><i></i> LIVE API • CONNECTING</div><div class="updated" id="updated">Last Update: —</div></div></header>
@@ -64,5 +128,56 @@ document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>{document.querySel
 $('moreDetailsBtn').onclick=()=>{const panels=[$('smartPanel'),$('swingV2'),$('scannerPanel'),$('eventTrackerPanel')],open=$('moreDetailsBtn').dataset.open==='1';panels.forEach(x=>x.classList.toggle('extra',false));panels.forEach(x=>{if(!open)x.style.display='block';else if(x!==$('newsPanel'))x.style.display='none'});$('moreDetailsBtn').dataset.open=open?'0':'1';$('moreDetailsBtn').textContent=open?'▾ MORE DETAILS':'▴ LESS DETAILS'};
 function refreshAll(){loadLive();loadNews();loadSmart();loadEvents();loadSwing()}refreshAll();setInterval(loadLive,30000);setInterval(loadNews,60000);setInterval(loadSmart,60000);setInterval(loadEvents,60000);setInterval(loadSwing,60000);
 </script>
-</body>
+<script>
+async function loadPlanV2(){
+ const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+ const esc=v=>String(v==null?'—':v).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+ try{
+  const r=await fetch('/api/plan?ts='+Date.now(),{cache:'no-store'}); const d=await r.json();
+  if(!d.ok) throw Error(d.error||d.reason||'Plan unavailable');
+  set('planDecision',d.decision||'NO TRADE'); set('planConfidence',(d.confidence??'—')+' / 10');
+  set('planAgreement',d.agreement==null?'INSUFFICIENT':d.agreement+'%'); set('planReason',d.reason||'NO TRADE');
+  set('planEntry',d.plan?.entry??'—'); set('planStop',d.plan?.stoploss??'—'); set('planTarget1',d.plan?.target1??'—'); set('planTarget2',d.plan?.target2??'—');
+  const names={market_open:'Market Open',freshness:'Fresh Data',index_alignment:'NIFTY + SENSEX',structure:'BOS / CHoCH',liquidity:'Liquidity',smc_retest:'Retest',orderflow:'Options Flow',forecast:'Forecast',news_risk:'News Risk'};
+  const html=Object.entries(d.gates||{}).map(([k,g])=>'<div class="why-item '+(g.status==='PASS'?'okbox':g.status==='BLOCK'?'dangerbox':'waitbox')+'"><span class="label">'+esc(names[k]||k)+'</span><b>'+esc(g.status)+'</b><span class="label">'+esc(g.reason)+'</span></div>').join('');
+  const box=document.getElementById('planGates'); if(box) box.innerHTML=html||'<div class="why-item"><b>Waiting…</b></div>';
+  const waiting=(d.gates_summary?.waiting||[]).length, blocked=(d.gates_summary?.blocked||[]).length;
+  set('planGateReason',blocked?'BLOCK: '+d.gates_summary.blocked.join(', '):waiting?'WAIT: '+d.gates_summary.waiting.join(', '):'PASS: all critical gates confirmed.');
+  set('planUpdated','Updated '+new Date().toLocaleTimeString()+' • Sniper Plan V2');
+ }catch(e){set('planDecision','NO TRADE');set('planReason','Plan engine unavailable — conservative fallback.');set('planUpdated','Plan V2: unavailable')}
+}
+loadPlanV2(); setInterval(loadPlanV2,30000);
+</script><script>
+/* MORE DETAILS CLICK FIX */
+(function(){
+  function wireMoreDetails(){
+    const app=document.querySelector('.app');
+    const btn=document.getElementById('moreDetailsBtn');
+    if(!app||!btn||btn.dataset.wired==='1')return;
+    btn.dataset.wired='1';
+    btn.addEventListener('click',function(ev){
+      ev.preventDefault();
+      const open=app.classList.toggle('details-open');
+      btn.textContent=open?'▴ LESS DETAILS':'▾ MORE DETAILS';
+      if(open){
+        const first=app.querySelector('.section:nth-of-type(4)');
+        if(first) first.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wireMoreDetails);
+  else wireMoreDetails();
+  setTimeout(wireMoreDetails,500);
+})();
+</script>
+<div class="nav-modal" id="navModal"><div class="nav-sheet"><h3 id="navModalTitle">Settings</h3><div id="navModalBody"></div><button class="nav-close" id="navClose">Close</button></div></div><script id="functional-nav-js">(function(){const nav=document.getElementById('sniperNav'),modal=document.getElementById('navModal'),title=document.getElementById('navModalTitle'),body=document.getElementById('navModalBody');if(!nav)return;function active(k){nav.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.nav===k))}function getSaved(){try{return JSON.parse(localStorage.getItem('sniperWatchlist')||'[]')}catch(e){return[]}}function show(k){active(k);if(k==='dashboard'){window.scrollTo({top:0,behavior:'smooth'});return}if(k==='scanner'){const el=document.getElementById('swingV2')||document.getElementById('swingScannerPanel');if(el){el.scrollIntoView({behavior:'smooth',block:'start'});el.classList.add('nav-focus');setTimeout(()=>el.classList.remove('nav-focus'),1200)}return}if(!modal)return;modal.classList.add('open');if(k==='watchlist'){title.textContent='👁️ Watchlist';const saved=getSaved();body.innerHTML=saved.length?'<p>'+saved.map(x=>{const o=typeof x==='string'?{symbol:x,lifecycle:'WATCH'}:x;return '• <b>'+String(o.symbol||'—')+'</b> — '+String(o.lifecycle||'WATCH')}).join('<br>')+'</p><p>Saved scanner candidates stay on this device.</p>':'<p>Your watchlist is empty. Tap Watchlist on a swing candidate to save it.</p>'}else if(k==='news'){title.textContent='📰 News Radar';body.innerHTML='<p>Use the News Radar and News Intelligence sections for current headlines, sentiment and risk context. News is context only, not a standalone CALL/PUT trigger.</p>'}else{title.textContent='⚙️ Settings';body.innerHTML='<p><b>Data:</b> Upstox market data.</p><p><b>Refresh:</b> Live cockpit and swing scanner refresh automatically.</p><p><b>Risk:</b> Capital and Risk % feed the position-size helper.</p><p><b>Safety:</b> Conflicting confirmation = NO TRADE. Setups are probabilistic/educational.</p>'}}nav.addEventListener('click',e=>{const b=e.target.closest('button[data-nav]');if(b)show(b.dataset.nav)});document.getElementById('navClose')?.addEventListener('click',()=>modal.classList.remove('open'));modal?.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});active('dashboard')})();</script><script id="swingV2Script">
+(function(){
+function esc(v){return String(v==null?'—':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function shareText(x){return `📈 NIFTY Sensex Sniper — NIFTY 500 Swing\n${x.symbol||'—'} | ${x.action||'WAIT'} | Score ${x.score||0}/10\nLifecycle: ${x.lifecycle||'WATCH'}\nSetup: ${x.setup||'—'}\nHolding: ${x.holding_period||'—'}\nEntry: ${x.entry??'—'} | SL: ${x.stoploss??'—'}\nT1: ${x.target1??'—'} | T2: ${x.target2??'—'} | R:R: ${x.rr??'—'}\nInvalidation: ${x.invalidation||'—'}\nEducational/probabilistic only — not a guaranteed prediction.`}
+function getWatch(){try{return JSON.parse(localStorage.getItem('sniperWatchlist')||'[]')}catch(e){return[]}}
+function addWatch(x){let a=getWatch();const id=x.symbol||'';a=a.filter(v=>typeof v==='string'?v!==id:v.symbol!==id);a.push({symbol:id,lifecycle:x.lifecycle||'WATCH',entry:x.entry,stoploss:x.stoploss,target1:x.target1,target2:x.target2,current_price:x.current_price,saved_at:new Date().toISOString()});localStorage.setItem('sniperWatchlist',JSON.stringify(a));return a.length}
+async function loadSwingV2(){const box=document.getElementById('swingV2List'),meta=document.getElementById('swingV2Meta');if(!box)return;try{const d=await (await fetch('/api/swing?ts='+Date.now(),{cache:'no-store'})).json();if(meta&&d.ok)meta.textContent=`Universe ${esc(d.universe_count)} • Mapped ${esc(d.mapped_count)} • Liquidity shortlist ${esc(d.liquidity_shortlist)} • Scanned ${esc(d.scanned_count)}`;if(!d.ok){box.textContent='🛡️ Swing engine unavailable — NO SWING.';return}const rows=d.candidates||[];if(!rows.length){box.textContent='🛡️ No confirmed swing setup right now.';return}box.innerHTML=rows.slice(0,5).map((x,i)=>{const action=String(x.action||'WAIT').toUpperCase(),cls=action.toLowerCase(),watch=esc(x.symbol||''),life=esc(x.lifecycle||'WATCH'),txt=encodeURIComponent(shareText(x));return `<div class="swing-card"><div class="swing-top"><span class="swing-symbol">${esc(x.symbol)}</span><span class="swing-action ${cls}">${esc(action)} • ${esc(x.score)}/10</span></div><span class="swing-life">${life}</span><div class="swing-meta">${esc(x.setup)} • ⏳ ${esc(x.holding_period)} • ₹${esc(x.current_price)}</div><div class="swing-grid"><div class="swing-k"><small>ENTRY</small><b>${esc(x.entry)}</b></div><div class="swing-k"><small>SL</small><b>${esc(x.stoploss)}</b></div><div class="swing-k"><small>T1</small><b>${esc(x.target1)}</b></div><div class="swing-k"><small>R:R</small><b>${esc(x.rr)}</b></div></div><div class="swing-confirm">🧩 ${(x.confirmations||[]).map(esc).join(' • ')||'Confirmation pending'}<br>🏭 Sector: ${esc(x.sector||'OTHER')} • 🧠 SMC: ${esc(x.smc?.bos||x.smc?.status||x.smc)}</div><div class="swing-actions"><button type="button" data-watch="${watch}" data-index="${i}">👁️ Watchlist</button><a class="swing-share wa" target="_blank" rel="noopener" href="https://wa.me/?text=${txt}">📲 WhatsApp</a></div></div>`}).join('');box.querySelectorAll('[data-watch]').forEach((b,i)=>b.addEventListener('click',()=>{const n=addWatch(rows[i]||{});b.textContent=`✓ Saved (${n})`;b.disabled=true}))}catch(e){box.textContent='🛡️ Live swing confirmation unavailable.'}}
+window.loadSwingV2=loadSwingV2;loadSwingV2();setInterval(loadSwingV2,60000);
+})();
+</script><script id="risk-engine-js">(function(){function n(id){return document.getElementById(id)}function money(v){return Number.isFinite(v)?'₹'+Math.round(v).toLocaleString('en-IN'):'—'}function calc(){const cap=Math.max(0,Number(n('riskCapital')?.value)||0),pct=Math.min(5,Math.max(0,Number(n('riskPct')?.value)||0)),amt=cap*pct/100;const cards=document.querySelectorAll('.swing-card');let entry=null,sl=null,action='WAIT';cards.forEach(c=>{if(entry==null){const t=c.innerText||'';const m=t.match(/Entry\s+₹?([0-9,.]+)/i),z=t.match(/SL\s+₹?([0-9,.]+)/i),a=t.match(/\b(BUY|WAIT|AVOID)\b/i);if(m&&z){entry=Number(m[1].replace(/,/g,''));sl=Number(z[1].replace(/,/g,''));action=a?a[1]:'WAIT'}}});const riskPer=entry&&sl&&entry>sl?entry-sl:0,qty=riskPer?Math.floor(amt/riskPer):0;n('riskAmount').textContent=money(amt);n('riskQty').textContent=action==='BUY'&&qty>0?qty.toLocaleString('en-IN'):'—';n('riskLoss').textContent=action==='BUY'&&qty>0?money(qty*riskPer):'—';n('riskNote').textContent=action==='BUY'&&qty>0?`Risk-first sizing: ₹${Math.round(amt).toLocaleString('en-IN')} max planned risk; ${qty} share(s) at current scanner Entry/SL.`:'No actionable BUY sizing: wait for a confirmed BUY setup with valid Entry and SL.'}['riskCapital','riskPct'].forEach(id=>n(id)?.addEventListener('input',calc));window.calcRiskEngine=calc;setTimeout(calc,1500);setInterval(calc,5000)})();</script></body>
 </html>
