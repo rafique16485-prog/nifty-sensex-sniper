@@ -1,0 +1,40 @@
+name: Apply UI Upgrades
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply UI layers
+        run: |
+          python scripts/upgrade_plan_ui.py
+          python scripts/compact_one_screen.py
+          python scripts/functional_nav.py
+          python scripts/swing_ui.py
+          python scripts/risk_management.py
+      - name: Validate
+        run: |
+          node --check api/live.js
+          node --check api/plan.js
+          node --check api/swing.js
+          python -m py_compile scripts/upgrade_plan_ui.py scripts/compact_one_screen.py scripts/functional_nav.py scripts/swing_ui.py scripts/risk_management.py
+          git diff --check
+      - name: Commit generated UI
+        run: |
+          if git diff --quiet; then
+            echo "UI already up to date"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add index.html api/live.js api/plan.js api/swing.js scripts .github/workflows
+            git commit -m "Apply complete trading cockpit UI"
+            git push
+          fi
